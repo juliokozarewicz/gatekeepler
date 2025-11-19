@@ -55,14 +55,6 @@ http {
 
     server {
 
-        # VARS TO CONFIG
-        # ===================================================
-        set $PRIVATE_DOMAIN 192.168.1.7;
-        set $DOCUMENTATION_PORT 4000;
-        set $HELLOWORLD_PORT 4005;
-        set $ACCOUNTS_PORT 4006;
-        # ===================================================
-
         listen 80;
         server_name $MAIN_DOMAIN www.$MAIN_DOMAIN;
 
