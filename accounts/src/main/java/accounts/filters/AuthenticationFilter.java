@@ -263,8 +263,8 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             // ---------------------------------------------- (Claim's map init)
             if (
                 claims.get("id") == null ||
-                    claims.get("email") == null ||
-                    claims.get("level") == null
+                claims.get("email") == null ||
+                claims.get("department") == null
             ) {
                 invalidAccessError(locale, response);
                 return;
@@ -272,12 +272,12 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
             Object idUser = claims.get("id");
             String emailUser = claims.get("email", String.class);
-            String levelUser = claims.get("level", String.class);
+            String departmentUser = claims.get("department", String.class);
             // ----------------------------------------------- (Claim's map end)
 
             // Convert roles
             List<SimpleGrantedAuthority> authorities = Collections.singletonList(
-                new SimpleGrantedAuthority("ROLE_" + levelUser.toUpperCase())
+                new SimpleGrantedAuthority("ROLE_" + departmentUser.toUpperCase())
             );
 
             // Create token
@@ -288,7 +288,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             Map<String, Object> dataMap = new LinkedHashMap<>();
             dataMap.put("id", idUser);
             dataMap.put("email", emailUser);
-            dataMap.put("level", levelUser);
+            dataMap.put("department", departmentUser);
 
             // set attributes in the request
             request.setAttribute("credentialsData", dataMap);

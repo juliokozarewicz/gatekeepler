@@ -107,6 +107,7 @@ public class AccountsCreateService {
             newAccount.setCreatedAt(nowUtc);
             newAccount.setUpdatedAt(nowUtc);
             newAccount.setLevel(UserLevelEnum.USER);
+            newAccount.setDepartment(accountsCreateDTO.department().toLowerCase());
             newAccount.setEmail(accountsCreateDTO.email().toLowerCase());
             newAccount.setPassword(
                 encryptionService.hashPassword(

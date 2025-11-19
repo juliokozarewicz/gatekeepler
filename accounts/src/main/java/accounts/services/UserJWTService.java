@@ -25,7 +25,7 @@ public class UserJWTService {
 
     // JWT lifespan
     // -------------------------------------------------------------------------
-    private static final long EXPIRATION_TIME = 120000; // 2 minutes
+    private static final long EXPIRATION_TIME = 900000; // 15 minutes
     // -------------------------------------------------------------------------
 
     public String createCredential(

@@ -17,6 +17,14 @@ public record AccountsCreateDTO(
 
     @NotEmpty(message = "{validation_is_required}")
     @Size(max = 255, message = "{validation_many_characters}")
+    @Pattern(
+        regexp = "^[^<>&'\"/]*$",
+        message = "{validation_disallowed_characters}"
+    )
+    String department,
+
+    @NotEmpty(message = "{validation_is_required}")
+    @Size(max = 255, message = "{validation_many_characters}")
     @Email(message = "{validation_must_valid_email}")
     String email,
 

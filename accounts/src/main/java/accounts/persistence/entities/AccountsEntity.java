@@ -39,9 +39,12 @@ public class AccountsEntity {
     @Column(nullable = false, length = 256)
     private String password;
 
+    @Column(nullable = false, length = 256)
+    private String department;
+
     @Builder.Default
     @Column(nullable = false)
-    private boolean active = false;
+    private boolean active = true;
 
     @Builder.Default
     @Column(nullable = false)

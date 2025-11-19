@@ -105,7 +105,6 @@ public class AccountsProfileService {
             dtoProfile.setTheme(entity.getTheme());
 
             profileCache.put(idUser, dtoProfile);
-
         }
 
         // Links

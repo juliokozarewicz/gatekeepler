@@ -20,7 +20,7 @@ services:
     hostname: database
     env_file:
       - .env
-    image: postgres:latest
+    image: postgres:17
     environment:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}

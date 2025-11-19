@@ -1,10 +1,3 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
-
 ### STS ###
 .apt_generated
 .factorypath
@@ -18,42 +11,33 @@ build/
 *.ipr
 !**/src/main/**/out/
 !**/src/test/**/out/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
+/.idea/
+/*.iml
 
 ### OTHERS ###
 logfile.*
 *.pem
 */static/uploads/*
-
-# Maven target directory
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
 /target/
-
-# Maven wrapper files
 /.mvn/wrapper/maven-wrapper.jar
-
-# Log files
 *.log
-
-# Package files
 *.jar
+.vscode/
 *.war
 *.ear
-
-# Temporary files
 *.tmp
 *.swp
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 *~
-
-# OS generated files
 .DS_Store
 Thumbs.db
-

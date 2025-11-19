@@ -273,7 +273,7 @@ public class AccountsManagementService implements AccountsManagementInterface {
         Map<String, String> credentialPayload = new LinkedHashMap<>();
         credentialPayload.put("id", findUser.get().getId().toString());
         credentialPayload.put("email", findUser.get().getEmail());
-        credentialPayload.put("level", findUser.get().getLevel());
+        credentialPayload.put("department", findUser.get().getDepartment());
 
         // Create raw JWT
         String credentialsTokenRaw = userJWTService.createCredential(
