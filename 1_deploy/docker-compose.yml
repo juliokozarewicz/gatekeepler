@@ -1,0 +1,62 @@
+services:
+
+  nginx:
+    container_name: nginx
+    hostname: nginx
+    build: ../infra-nginx-dockerized
+    ports:
+      - "80:80"
+    networks:
+      - spring_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - helloworld
+
+  database:
+    container_name: database
+    hostname: database
+    env_file:
+      - .env
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${DATABASE_NAME}
+      POSTGRES_PASSWORD: ${DATABASE_USER}
+      POSTGRES_DB: ${DATABASE_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - spring_net
+
+  helloworld:
+    container_name: helloworld
+    hostname: helloworld
+    env_file:
+      - .env
+    build: ../helloworld
+    ports:
+      - "${HELLOWORLD_PORT}:${HELLOWORLD_PORT}"
+    networks:
+      - spring_net
+
+  accounts:
+    container_name: accounts
+    hostname: accounts
+    env_file:
+      - .env
+    build: ../accounts
+    ports:
+      - "${ACCOUNTS_PORT}:${ACCOUNTS_PORT}"
+    networks:
+      - spring_net
+    depends_on:
+      - database
+
+volumes:
+  postgres_data:
+
+networks:
+  spring_net:
+    driver: bridge
