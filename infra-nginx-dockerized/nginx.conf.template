@@ -161,6 +161,7 @@ http {
         # -------------------------------------------------------------- (end errors)
 
         # -------------------------------------------------------- (init hello world)
+
         # [ HELLO WORLD - Static Files ]
         location /api/v1/helloworld/static {
             limit_req zone=general_zone burst=5 nodelay;
@@ -220,10 +221,10 @@ http {
             proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
             proxy_pass http://$PRIVATE_DOMAIN:$DOCUMENTATION_PORT;
         }
-
         # ------------------------------------------------------- (end documentation)
 
         # ----------------------------------------------------------- (init accounts)
+
         # [ ACCOUNTS - Static Files ]
         location /api/v1/accounts/static {
             limit_req zone=general_zone burst=5 nodelay;
@@ -232,24 +233,6 @@ http {
 
         # [ ACCOUNTS - Signup ]
         location /api/v1/accounts/signup {
-            limit_req zone=critical_zone burst=1 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Activate Account ]
-        location /api/v1/accounts/activate-account {
-            limit_req zone=critical_zone burst=1 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Update Password Validation ]
-        location /api/v1/accounts/update-password-link {
-            limit_req zone=critical_zone burst=1 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Update Password ]
-        location /api/v1/accounts/update-password {
             limit_req zone=critical_zone burst=1 nodelay;
             proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
         }
@@ -275,60 +258,6 @@ http {
         # [ ACCOUNTS - Update Profile ]
         location /api/v1/accounts/update-profile {
             limit_req zone=general_zone burst=5 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Create Address ]
-        location /api/v1/accounts/create-address {
-            limit_req zone=general_zone burst=5 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Get Address ]
-        location /api/v1/accounts/get-address {
-            limit_req zone=general_zone burst=5 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Delete Address ]
-        location /api/v1/accounts/delete-address {
-            limit_req zone=general_zone burst=5 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Update Email Link ]
-        location /api/v1/accounts/update-email-link {
-            limit_req zone=critical_zone burst=1 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Update Email ]
-        location /api/v1/accounts/update-email {
-            limit_req zone=critical_zone burst=1 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Get Connected Devices ]
-        location /api/v1/accounts/connected-devices {
-            limit_req zone=critical_zone burst=1 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Delete Account Link ]
-        location /api/v1/accounts/delete-account-link {
-            limit_req zone=critical_zone burst=1 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Delete Account ]
-        location /api/v1/accounts/delete {
-            limit_req zone=critical_zone burst=1 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
-        }
-
-        # [ ACCOUNTS - Upload Avatar ]
-        location /api/v1/accounts/upload-avatar {
-            limit_req zone=critical_zone burst=5 nodelay;
             proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
         }
         # ------------------------------------------------------------ (end accounts)
