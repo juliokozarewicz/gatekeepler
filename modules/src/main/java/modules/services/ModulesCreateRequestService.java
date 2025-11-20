@@ -56,24 +56,25 @@ public class ModulesCreateRequestService {
         String emailUser = (String) credentialsData.get("email");
         String departmentUser = (String) credentialsData.get("email");
 
+        // Protocol number
+        String protocolNumber = generateProtocolNumber(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
+
         // Commit DB
         // ---------------------------------------------------------------------
-        for ( String moduleName : modulesCreateRequestDTO.modules() ) {
 
-            ModuleRequestEntity newRequest = new ModuleRequestEntity();
-            newRequest.setId(UUID.randomUUID());
-            newRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-            newRequest.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-            newRequest.setProtocolNumber(generateProtocolNumber(ZonedDateTime.now(ZoneOffset.UTC).toInstant()));
-            newRequest.setModuleName(moduleName);
-            newRequest.setJustification(modulesCreateRequestDTO.justification());
-            newRequest.setUrgent(modulesCreateRequestDTO.urgent());
-            newRequest.setStatus("ATIVO");  // ######
-            newRequest.setDenialReason(null); // ######
-            newRequest.setIdUser(idUser.toString());
+        ModuleRequestEntity newRequest = new ModuleRequestEntity();
+        newRequest.setId(UUID.randomUUID());
+        newRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
+        newRequest.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
+        newRequest.setProtocolNumber(protocolNumber);
+        newRequest.setModuleName(modulesCreateRequestDTO.modules().toString());
+        newRequest.setJustification(modulesCreateRequestDTO.justification());
+        newRequest.setUrgent(modulesCreateRequestDTO.urgent());
+        newRequest.setStatus("ATIVO");  // #####
+        newRequest.setDenialReason(null); // #####
+        newRequest.setIdUser(idUser.toString());
 
-            moduleRequestRepository.save(newRequest);
-        }
+        moduleRequestRepository.save(newRequest);
         // ---------------------------------------------------------------------
 
         // response (links)
@@ -85,10 +86,10 @@ public class ModulesCreateRequestService {
             .statusMessage("success")
             .message(
                 messageSource.getMessage(
-                    "response_get_data_success",
+                    "response_request_aproved",
                     null,
                     locale
-                )
+                ) + " " + protocolNumber + "."
             )
             .links(customLinks)
             .build();
@@ -98,6 +99,7 @@ public class ModulesCreateRequestService {
 
     }
 
+    // Generate protocol number methods
     private String generateProtocolNumber(Instant nowUtc) {
         String prefix = "SOL";
         String date = nowUtc.toString().substring(0, 10).replace("-", "");  // YYYYMMDD

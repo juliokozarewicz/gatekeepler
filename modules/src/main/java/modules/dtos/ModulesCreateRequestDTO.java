@@ -9,7 +9,7 @@ import java.util.List;
 public record ModulesCreateRequestDTO(
 
     @NotEmpty(message = "{validation_is_required}")
-    @Size(max = 3, message = "{validation_many_characters}")
+    @Size(max = 3, message = "{validation_many_modules}")
     List<
             @NotEmpty(message = "{validation_is_required}")
             @Size(max = 255, message = "{validation_many_characters}")
@@ -21,7 +21,7 @@ public record ModulesCreateRequestDTO(
             > modules,
 
     @NotEmpty(message = "{validation_is_required}")
-    @Size(min = 20, max = 500, message = "{validation_invalid_justification_size}")
+    @Size(max = 500, message = "{validation_many_characters}")
     @Pattern(
         regexp = "^(?=.*[a-z])(?!.*(.)\\1{4})[\\p{L}0-9 .,!?:;\\-]{20,500}$",
         message = "{validation_disallowed_characters}" //
