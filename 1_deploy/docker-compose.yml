@@ -53,8 +53,8 @@ services:
       - spring_net
 
   documentation:
-    container_name: aaaaaa
-    hostname: aaaaaa
+    container_name: documentation
+    hostname: documentation
     env_file:
       - .env
     build: ../documentation
