@@ -3,6 +3,7 @@ package modules.persistence.entities;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -32,8 +33,10 @@ public class ModuleRequestEntity {
     @Column(updatable = false, nullable = false)
     private String protocolNumber;
 
-    @Column(nullable = false, length = 255)
-    private String moduleName;
+    @ElementCollection
+    @CollectionTable(name = "module_names_requested", joinColumns = @JoinColumn(name = "module_request_id"))
+    @Column(name = "module_name")
+    private List<String> moduleNamesRequested;
 
     @Column(nullable = false, length = 500)
     private String justification;

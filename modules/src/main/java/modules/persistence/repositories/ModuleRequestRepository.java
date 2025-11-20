@@ -2,6 +2,8 @@ package modules.persistence.repositories;
 
 import modules.persistence.entities.ModuleRequestEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,6 +19,7 @@ public interface ModuleRequestRepository extends JpaRepository<ModuleRequestEnti
 
     List<ModuleRequestEntity> findByStatus(String status);
 
-    List<ModuleRequestEntity> findByModuleName(String moduleName);
+    @Query("SELECT m FROM ModuleRequestEntity m JOIN m.moduleNamesRequested mn WHERE mn = :moduleName")
+    List<ModuleRequestEntity> findByModuleNamesRequested(@Param("moduleName") String moduleName);
 
 }

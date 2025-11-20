@@ -67,7 +67,7 @@ public class ModulesCreateRequestService {
         newRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
         newRequest.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
         newRequest.setProtocolNumber(protocolNumber);
-        newRequest.setModuleName(modulesCreateRequestDTO.modules().toString());
+        newRequest.setModuleNamesRequested(modulesCreateRequestDTO.modules());
         newRequest.setJustification(modulesCreateRequestDTO.justification());
         newRequest.setUrgent(modulesCreateRequestDTO.urgent());
         newRequest.setStatus("ATIVO");  // #####

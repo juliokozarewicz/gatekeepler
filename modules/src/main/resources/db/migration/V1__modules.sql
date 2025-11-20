@@ -33,12 +33,18 @@ CREATE TABLE IF NOT EXISTS modules.module_requests (
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
     protocol_number VARCHAR(255) NOT NULL UNIQUE,
-    module_name VARCHAR(255) NOT NULL,
     justification VARCHAR(500) NOT NULL,
     urgent BOOLEAN NOT NULL,
     status VARCHAR(50) NOT NULL,
     denial_reason VARCHAR(500),
     id_user VARCHAR(255) NOT NULL
+);
+
+-- AUX TABLE: module_names
+CREATE TABLE IF NOT EXISTS modules.module_names_requested (
+    module_request_id UUID REFERENCES modules.module_requests(id) ON DELETE CASCADE,
+    module_name VARCHAR(255) NOT NULL,
+    PRIMARY KEY (module_request_id, module_name)
 );
 
 -- ============================================================
