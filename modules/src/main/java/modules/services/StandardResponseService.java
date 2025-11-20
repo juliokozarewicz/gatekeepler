@@ -1,4 +1,4 @@
-package helloworld.services;
+package modules.services;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;

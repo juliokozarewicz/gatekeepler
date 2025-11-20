@@ -1,17 +1,19 @@
-package helloworld.controllers;
+package modules.controllers;
 
-import helloworld.dtos.HelloWorldDTO;
-import helloworld.services.HelloWorldService;
+import modules.dtos.ModulesCreateRequestDTO;
+import modules.services.ModulesCreateRequestService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Validated
-class HelloWorldController {
+class ModulesCreateRequestController {
 
     // ==================================================== ( constructor init )
 
@@ -19,30 +21,26 @@ class HelloWorldController {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
-    private final HelloWorldService helloWorldService;
+    private final ModulesCreateRequestService modulesCreateRequestService;
 
-    public HelloWorldController(
-        HelloWorldService helloWorldService
+    public ModulesCreateRequestController(
+        ModulesCreateRequestService modulesCreateRequestService
     ) {
-        this.helloWorldService = helloWorldService;
+        this.modulesCreateRequestService = modulesCreateRequestService;
     }
 
     // ===================================================== ( constructor end )
 
-    @GetMapping("/${HELLOWORLD_BASE_URL}")
+    @PostMapping("/${MODULES_BASE_URL}/create-request")
     public ResponseEntity handle(
 
         // dtos errors
-        @Valid HelloWorldDTO helloWorldDTO,
+        @Valid @RequestBody ModulesCreateRequestDTO modulesCreateRequestDTO,
         BindingResult bindingResult
 
     ) {
 
-        // message
-        String message = helloWorldDTO.message() != null ?
-            helloWorldDTO.message() : "Hello World!";
-
-        return helloWorldService.execute(message);
+        return modulesCreateRequestService.execute(modulesCreateRequestDTO);
 
     }
 

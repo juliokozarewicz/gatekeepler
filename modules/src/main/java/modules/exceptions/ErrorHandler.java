@@ -1,6 +1,6 @@
-package helloworld.exceptions;
+package modules.exceptions;
 
-import helloworld.services.StandardResponseService;
+import modules.services.StandardResponseService;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

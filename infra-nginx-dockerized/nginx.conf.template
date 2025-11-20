@@ -262,6 +262,15 @@ http {
         }
         # ------------------------------------------------------------ (end accounts)
 
+        # ------------------------------------------------------------ (init modules)
+
+        # [ MODULES - Create Request ]
+        location /api/v1/modules/create-request {
+            limit_req zone=general_zone burst=5 nodelay;
+            proxy_pass http://$PRIVATE_DOMAIN:$MODULES_PORT;
+        }
+        # ------------------------------------------------------------- (end modules)
+
     }
 
 }

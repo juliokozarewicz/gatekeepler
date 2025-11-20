@@ -88,6 +88,19 @@ services:
       - database
       - accounts_redis
 
+  modules:
+    container_name: modules
+    hostname: modules
+    env_file:
+      - .env
+    build: ../modules
+    ports:
+      - "${MODULES_PORT}:${MODULES_PORT}"
+    networks:
+      - spring_net
+    depends_on:
+      - accounts
+
 volumes:
   postgres_data:
   redis_data:

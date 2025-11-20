@@ -1,4 +1,4 @@
-package helloworld.persistence.specifications;
+package modules.persistence.specifications;
 
 public class HelloWorldSpecification {
 }

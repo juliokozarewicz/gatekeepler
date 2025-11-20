@@ -1,5 +1,6 @@
-package helloworld.services;
+package modules.services;
 
+import modules.dtos.ModulesCreateRequestDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -11,19 +12,19 @@ import java.util.Locale;
 import java.util.Map;
 
 @Service
-public class HelloWorldService {
+public class ModulesCreateRequestService {
 
     // ==================================================== ( constructor init )
 
     // Env
     // -------------------------------------------------------------------------
-    @Value("${HELLOWORLD_BASE_URL}")
+    @Value("${MODULES_BASE_URL}")
     private String helloWorldBaseURL;
     // -------------------------------------------------------------------------
 
     private final MessageSource messageSource;
 
-    public HelloWorldService(
+    public ModulesCreateRequestService(
         MessageSource messageSource
     ) {
         this.messageSource = messageSource;
@@ -32,11 +33,13 @@ public class HelloWorldService {
     // ===================================================== ( constructor end )
 
     public ResponseEntity execute(
-        String message
+        ModulesCreateRequestDTO modulesCreateRequestDTO
     ) {
 
         // language
         Locale locale = LocaleContextHolder.getLocale();
+
+        System.out.println(modulesCreateRequestDTO);
 
         // response (links)
         Map<String, String> customLinks = new LinkedHashMap<>();
@@ -50,7 +53,7 @@ public class HelloWorldService {
                     "response_get_data_success",
                     null,
                     locale
-                ) + " (" + message + ")"
+                )
             )
             .links(customLinks)
             .build();

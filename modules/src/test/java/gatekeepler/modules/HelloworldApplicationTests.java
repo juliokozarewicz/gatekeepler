@@ -1,4 +1,4 @@
-package gatekeepler.helloworld;
+package gatekeepler.modules;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
