@@ -174,10 +174,10 @@ http {
         }
         # --------------------------------------------------------- (end hello world)
 
-        # ------------------------------------------------------ (init documentation)
+        # ------------------------------------------------------ (init aaaaaa)
 
         # [ DOCUMENTATION - Static Files ]
-        location /api/v1/documentation/static {
+        location /api/v1/aaaaaa/static {
             limit_req zone=general_zone burst=10 nodelay;
             proxy_cache static_cache;
             proxy_cache_valid 200 10m;
@@ -186,7 +186,7 @@ http {
         }
 
         # [ DOCUMENTATION - Stoplight Elements ]
-        location /api/v1/documentation {
+        location /api/v1/aaaaaa {
             limit_req zone=general_zone burst=10 nodelay;
             proxy_cache static_cache;
             proxy_cache_valid 200 10m;
@@ -195,7 +195,7 @@ http {
         }
 
         # [ DOCUMENTATION - Swagger ]
-        location /api/v1/documentation/swagger {
+        location /api/v1/aaaaaa/swagger {
             limit_req zone=general_zone burst=5 nodelay;
             proxy_cache static_cache;
             proxy_cache_valid 200 10m;
@@ -204,7 +204,7 @@ http {
         }
 
         # [ DOCUMENTATION - JSON ]
-        location /api/v1/documentation/json {
+        location /api/v1/aaaaaa/json {
             limit_req zone=general_zone burst=5 nodelay;
             proxy_cache static_cache;
             proxy_cache_valid 200 5m;
@@ -213,7 +213,7 @@ http {
         }
 
         # [ DOCUMENTATION - Redocly ]
-        location /api/v1/documentation/redocly {
+        location /api/v1/aaaaaa/redocly {
             limit_req zone=general_zone burst=5 nodelay;
             proxy_cache static_cache;
             proxy_cache_valid 200 10m;
@@ -221,7 +221,7 @@ http {
             proxy_pass http://$PRIVATE_DOMAIN:$DOCUMENTATION_PORT;
         }
 
-        # ------------------------------------------------------- (end documentation)
+        # ------------------------------------------------------- (end aaaaaa)
 
         # ----------------------------------------------------------- (init accounts)
         # [ ACCOUNTS - Static Files ]

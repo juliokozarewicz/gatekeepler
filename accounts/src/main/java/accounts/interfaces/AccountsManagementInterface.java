@@ -9,8 +9,6 @@ public interface AccountsManagementInterface {
 
     String createVerificationToken(UUID idUser, String reason);
 
-    String createVerificationPin(UUID idUser, String reason, Object meta);
-
     void deletePinByIdUser(UUID idUser);
 
     void deleteAllVerificationTokenByIdUserNewTransaction(UUID idUser);

@@ -2,7 +2,6 @@ package accounts.services;
 
 import accounts.dtos.AccountsCreateDTO;
 import accounts.enums.AccountsUpdateEnum;
-import accounts.enums.EmailResponsesEnum;
 import accounts.enums.UserLevelEnum;
 import accounts.exceptions.ErrorHandler;
 import accounts.persistence.entities.AccountsEntity;
@@ -17,9 +16,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;

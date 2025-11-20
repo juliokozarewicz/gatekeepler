@@ -192,35 +192,6 @@ public class AccountsManagementService implements AccountsManagementInterface {
     }
 
     @Override
-    public String createVerificationPin(
-        UUID idUser,
-        String reason,
-        Object meta
-    ) {
-
-        // Clean all old pin's
-        pinVerificationCache.evict(idUser);
-
-        // Create pin
-        int pin = new Random().nextInt(900000) + 100000;
-        String pinCode = String.valueOf(pin);
-
-        AccountsCacheVerificationPinMetaDTO pinDTO =
-            new AccountsCacheVerificationPinMetaDTO();
-            pinDTO.setVerificationPin(pinCode);
-            pinDTO.setReason(reason);
-            pinDTO.setMeta(meta);
-
-        pinVerificationCache.put(
-            idUser,
-            pinDTO
-            );
-
-        return pinCode;
-
-    }
-
-    @Override
     public void deletePinByIdUser(UUID idUser) {
         pinVerificationCache.evict(idUser);
     }

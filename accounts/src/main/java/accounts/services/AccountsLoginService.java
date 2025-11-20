@@ -1,7 +1,6 @@
 package accounts.services;
 
 import accounts.dtos.AccountsLoginDTO;
-import accounts.enums.EmailResponsesEnum;
 import accounts.exceptions.ErrorHandler;
 import accounts.persistence.entities.AccountsEntity;
 import accounts.persistence.repositories.AccountsRepository;
@@ -120,13 +119,6 @@ public class AccountsLoginService {
                 findUser.get().getId()
             );
 
-            // send email
-            accountsManagementService.sendEmailStandard(
-                findUser.get().getEmail().toLowerCase(),
-                EmailResponsesEnum.ACCOUNT_BANNED_ERROR,
-                null
-            );
-
             // call custom error
             errorHandler.customErrorThrow(
                 403,
@@ -145,13 +137,6 @@ public class AccountsLoginService {
             // Revoke all tokens
             accountsManagementService.deleteAllRefreshTokensByIdNewTransaction(
                 findUser.get().getId()
-            );
-
-            // send email
-            accountsManagementService.sendEmailStandard(
-                findUser.get().getEmail().toLowerCase(),
-                EmailResponsesEnum.ACCOUNT_EXIST_DEACTIVATED_ERROR,
-                null
             );
 
             // call custom error

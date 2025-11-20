@@ -52,6 +52,17 @@ services:
     networks:
       - spring_net
 
+  documentation:
+    container_name: aaaaaa
+    hostname: aaaaaa
+    env_file:
+      - .env
+    build: ../documentation
+    ports:
+      - "${DOCUMENTATION_PORT}:${DOCUMENTATION_PORT}"
+    networks:
+      - spring_net
+
   helloworld:
     container_name: helloworld
     hostname: helloworld
