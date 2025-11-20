@@ -1,4 +1,4 @@
--- SCHEMA (opcional caso já exista)
+-- SCHEMA
 CREATE SCHEMA IF NOT EXISTS modules;
 
 -- TABLE: modules
@@ -25,6 +25,20 @@ CREATE TABLE IF NOT EXISTS modules.modules_allowed_departments (
     module_name VARCHAR(255) NOT NULL,
     department VARCHAR(255) NOT NULL,
     CONSTRAINT uq_allowed UNIQUE (module_name, department)
+);
+
+-- TABLE: module_requests
+CREATE TABLE IF NOT EXISTS modules.module_requests (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
+    protocol_number VARCHAR(255) NOT NULL UNIQUE,
+    module_name VARCHAR(255) NOT NULL,
+    justification VARCHAR(500) NOT NULL,
+    urgent BOOLEAN NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    denial_reason VARCHAR(500),
+    id_user VARCHAR(255) NOT NULL
 );
 
 -- ============================================================

@@ -149,7 +149,7 @@ public class ErrorHandler {
             .statusMessage("error")
             .message(
                 messageSource.getMessage(
-                    "response_response_server_error", null, locale
+                    "response_server_error", null, locale
                 )
             )
             .build();

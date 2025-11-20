@@ -1,5 +1,6 @@
 package modules.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import modules.dtos.ModulesCreateRequestDTO;
 import modules.services.ModulesCreateRequestService;
 import jakarta.validation.Valid;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @Validated
@@ -32,15 +35,25 @@ class ModulesCreateRequestController {
     // ===================================================== ( constructor end )
 
     @PostMapping("/${MODULES_BASE_URL}/create-request")
+    @SuppressWarnings("unchecked")
     public ResponseEntity handle(
 
         // dtos errors
         @Valid @RequestBody ModulesCreateRequestDTO modulesCreateRequestDTO,
-        BindingResult bindingResult
+        BindingResult bindingResult,
+
+        HttpServletRequest request
 
     ) {
 
-        return modulesCreateRequestService.execute(modulesCreateRequestDTO);
+        // Auth endpoint
+        Map<String, Object> credentialsData = (Map<String, Object>)
+        request.getAttribute("credentialsData");
+
+        return modulesCreateRequestService.execute(
+            credentialsData,
+            modulesCreateRequestDTO
+        );
 
     }
 
