@@ -284,6 +284,12 @@ http {
             proxy_pass http://modules_backend;
             limit_req zone=general_zone burst=5 nodelay;
         }
+
+        # [ MODULES - Read Requests ]
+        location /api/v1/modules/read-requests {
+            proxy_pass http://modules_backend;
+            limit_req zone=general_zone burst=5 nodelay;
+        }
         # ------------------------------------------------------------- (end modules)
 
     }

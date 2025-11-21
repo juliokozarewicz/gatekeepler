@@ -18,7 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @ToString
-public class ModuleRequestEntity {
+public class ModulesRequestEntity {
 
     @Id
     @Column(updatable = false, nullable = false)

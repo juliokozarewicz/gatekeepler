@@ -1,11 +1,10 @@
 package modules.services;
 
-import jakarta.transaction.Transactional;
 import modules.dtos.ModulesCreateRequestDTO;
 import modules.exceptions.ErrorHandler;
-import modules.persistence.entities.ModuleRequestEntity;
+import modules.persistence.entities.ModulesRequestEntity;
 import modules.persistence.entities.ModulesEntity;
-import modules.persistence.repositories.ModuleRequestRepository;
+import modules.persistence.repositories.ModulesRequestRepository;
 import modules.persistence.repositories.ModulesAllowedDepartmentsRepository;
 import modules.persistence.repositories.ModulesRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +31,7 @@ public class ModulesCreateRequestService {
     // -------------------------------------------------------------------------
 
     private final MessageSource messageSource;
-    private final ModuleRequestRepository moduleRequestRepository;
+    private final ModulesRequestRepository moduleRequestRepository;
     private final ModulesAllowedDepartmentsRepository modulesAllowedDepartmentsRepository;
     private final ModulesRepository modulesRepository;
     private final ErrorHandler errorHandler;
@@ -40,7 +39,7 @@ public class ModulesCreateRequestService {
     public ModulesCreateRequestService(
 
         MessageSource messageSource,
-        ModuleRequestRepository moduleRequestRepository,
+        ModulesRequestRepository moduleRequestRepository,
         ModulesAllowedDepartmentsRepository modulesAllowedDepartmentsRepository,
         ModulesRepository modulesRepository,
         ErrorHandler errorHandler
@@ -110,7 +109,7 @@ public class ModulesCreateRequestService {
         // Checking if User Already Has Active Request for the Same Modules
         for (String moduleName : requestedModules) {
 
-            List<ModuleRequestEntity> existingRequests = moduleRequestRepository
+            List<ModulesRequestEntity> existingRequests = moduleRequestRepository
                 .findByIdUser(idUser.toString());
 
             boolean hasActiveRequestForModule = existingRequests.stream()
@@ -269,7 +268,7 @@ public class ModulesCreateRequestService {
         ModulesCreateRequestDTO modulesCreateRequestDTO,
         String idUser
     ) {
-        ModuleRequestEntity newRequest = new ModuleRequestEntity();
+        ModulesRequestEntity newRequest = new ModulesRequestEntity();
         newRequest.setId(UUID.randomUUID());
         newRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
         newRequest.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());

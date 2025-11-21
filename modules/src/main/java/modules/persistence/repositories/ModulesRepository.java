@@ -1,6 +1,8 @@
 package modules.persistence.repositories;
 
 import modules.persistence.entities.ModulesEntity;
+import modules.persistence.entities.ModulesRequestEntity;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,5 +18,4 @@ public interface ModulesRepository extends JpaRepository<ModulesEntity, UUID> {
     List<ModulesEntity> findByActiveTrue();
 
     Optional<ModulesEntity> findById(UUID id);
-
 }
