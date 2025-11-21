@@ -1113,9 +1113,9 @@ public class DocumentationJson {
                                                             "id": "8fd0a9ca-23f2-4dd5-92d2-77a0af91c567",
                                                             "protocol": "SOL-20251121-124D",
                                                             "requestedModules": [
-                                                                "audit",
-                                                                "employee portal",
-                                                                "management reports"
+                                                                "auditoria",
+                                                                "portal do colaborador",
+                                                                "relatórios gerenciais"
                                                             ],
                                                             "status": "denied",
                                                             "justification": "Example justification text.",
@@ -1142,7 +1142,160 @@ public class DocumentationJson {
                         }
                     }
                 },
+                """
+            )
+
+            .append(
+                """
                 # ==============================================================
+                "/MODULES_BASE_URL_REPLACE/read-one-request/{idRequest}": {
+                    "get": {
+                        "summary": "Read a specific module access request",
+                        "description": "Retrieves the details of a specific module access request created by the authenticated user. The request ID must be a valid UUID and must belong to the requesting user. The response includes protocol information, requested modules, justification, urgency, status, expiration date, denial reason, and timestamps. The user ID is intentionally omitted for security reasons.",
+                        "tags": ["MODULES"],
+                        "security": [{ "BearerAuth": [] }],
+                
+                        "parameters": [
+                            {
+                                "name": "idRequest",
+                                "in": "path",
+                                "required": true,
+                                "schema": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "example": "875810c5-f702-4c2f-ad8e-4697117ab310"
+                                },
+                                "description": "Unique identifier of the request. Must be a valid UUID in the format `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`."
+                            }
+                        ],
+                
+                        "responses": {
+                            "200": {
+                                "description": "Request retrieved successfully.",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "statusCode": { "type": "integer", "example": 200 },
+                                                "statusMessage": { "type": "string", "example": "success" },
+                                                "message": { "type": "string", "example": "Data received successfully." },
+                                                "data": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "format": "uuid",
+                                                            "example": "875810c5-f702-4c2f-ad8e-4697117ab310"
+                                                        },
+                                                        "createdAt": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2025-11-21T22:53:01.901055Z"
+                                                        },
+                                                        "updatedAt": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2025-11-21T22:53:01.901076Z"
+                                                        },
+                                                        "expirationDate": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2026-05-20T22:53:01.901055Z"
+                                                        },
+                                                        "protocolNumber": {
+                                                            "type": "string",
+                                                            "example": "SOL-20251121-EA2E"
+                                                        },
+                                                        "moduleNamesRequested": {
+                                                            "type": "array",
+                                                            "items": { "type": "string" },
+                                                            "example": [
+                                                                "auditoria",
+                                                                "portal do colaborador",
+                                                                "relatórios gerenciais"
+                                                            ]
+                                                        },
+                                                        "justification": {
+                                                            "type": "string",
+                                                            "example": "Teste de texto para uma justificação."
+                                                        },
+                                                        "urgent": {
+                                                            "type": "boolean",
+                                                            "example": false
+                                                        },
+                                                        "status": {
+                                                            "type": "string",
+                                                            "example": "negado"
+                                                        },
+                                                        "denialReason": {
+                                                            "type": "string",
+                                                            "nullable": true,
+                                                            "example": "Request denied. You do not have access to the module: AUDITORIA"
+                                                        }
+                                                    }
+                                                },
+                                                "links": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "self": {
+                                                            "type": "string",
+                                                            "example": "/api/v1/modules/read-one-request/875810c5-f702-4c2f-ad8e-4697117ab310"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "examples": {
+                                            "successResponse": {
+                                                "summary": "Successful request retrieval",
+                                                "value": {
+                                                    "statusCode": 200,
+                                                    "statusMessage": "success",
+                                                    "message": "Data received successfully.",
+                                                    "data": {
+                                                        "id": "875810c5-f702-4c2f-ad8e-4697117ab310",
+                                                        "createdAt": "2025-11-21T22:53:01.901055Z",
+                                                        "updatedAt": "2025-11-21T22:53:01.901076Z",
+                                                        "expirationDate": "2026-05-20T22:53:01.901055Z",
+                                                        "protocolNumber": "SOL-20251121-EA2E",
+                                                        "moduleNamesRequested": [
+                                                            "auditoria",
+                                                            "portal do colaborador",
+                                                            "relatórios gerenciais"
+                                                        ],
+                                                        "justification": "Teste de texto para uma justificação.",
+                                                        "urgent": false,
+                                                        "status": "negado",
+                                                        "denialReason": "Request denied. You do not have access to the module: AUDITORIA"
+                                                    },
+                                                    "links": {
+                                                        "self": "/api/v1/modules/read-one-request/875810c5-f702-4c2f-ad8e-4697117ab310"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "404": {
+                                "description": "Request not found or does not belong to the user.",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "status": { "type": "integer", "example": 404 },
+                                                "statusMessage": { "type": "string", "example": "error" },
+                                                "message": { "type": "string", "example": "Request not found." }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 """
             )
 
