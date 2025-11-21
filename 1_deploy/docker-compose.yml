@@ -11,9 +11,9 @@ services:
       - spring_net
     depends_on:
       - helloworld
-      - modules1
-      - modules2
-      - modules3
+      - modules
+      - accounts
+      - documentation
 
   database:
     container_name: database
@@ -83,7 +83,7 @@ services:
       - database
       - accounts_redis
 
-  modules1:
+  modules:
     build: ../modules
     env_file:
       - .env
@@ -93,28 +93,8 @@ services:
       - spring_net
     depends_on:
       - accounts
-
-  modules2:
-    build: ../modules
-    env_file:
-      - .env
-    expose:
-      - "${MODULES_PORT}"
-    networks:
-      - spring_net
-    depends_on:
-      - accounts
-
-  modules3:
-    build: ../modules
-    env_file:
-      - .env
-    expose:
-      - "${MODULES_PORT}"
-    networks:
-      - spring_net
-    depends_on:
-      - accounts
+    deploy:
+      replicas: 3
 
 volumes:
   postgres_data:

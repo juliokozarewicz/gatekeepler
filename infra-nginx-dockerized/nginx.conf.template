@@ -55,9 +55,7 @@ http {
 
     # ---------------------------------------------------------- (load balancer init)
     upstream modules_backend {
-        server modules1:${MODULES_PORT};
-        server modules2:${MODULES_PORT};
-        server modules3:${MODULES_PORT};
+        server modules:${MODULES_PORT};
     }
     # ----------------------------------------------------------- (load balancer end)
 
