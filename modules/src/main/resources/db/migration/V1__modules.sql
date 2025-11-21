@@ -49,77 +49,77 @@ CREATE TABLE IF NOT EXISTS modules.module_names_requested (
 
 -- ============================================================
 INSERT INTO modules.modules (id, created_at, updated_at, name, description, active) VALUES
-    (gen_random_uuid(), NOW(), NOW(), 'Portal do Colaborador', 'Acesso básico ao sistema', TRUE),
-    (gen_random_uuid(), NOW(), NOW(), 'Relatórios Gerenciais', 'Dashboards e relatórios', TRUE),
-    (gen_random_uuid(), NOW(), NOW(), 'Gestão Financeira', 'Funções gerais financeiras', TRUE),
-    (gen_random_uuid(), NOW(), NOW(), 'Aprovador Financeiro', 'Aprova solicitações financeiras', TRUE),
-    (gen_random_uuid(), NOW(), NOW(), 'Solicitante Financeiro', 'Cria solicitações financeiras', TRUE),
-    (gen_random_uuid(), NOW(), NOW(), 'Administrador RH', 'Acesso administrativo do RH', TRUE),
-    (gen_random_uuid(), NOW(), NOW(), 'Colaborador RH', 'Acesso operacional do RH', TRUE),
-    (gen_random_uuid(), NOW(), NOW(), 'Gestão de Estoque', 'Controle de estoque', TRUE),
-    (gen_random_uuid(), NOW(), NOW(), 'Compras', 'Processos de compras', TRUE),
-    (gen_random_uuid(), NOW(), NOW(), 'Auditoria', 'Acesso auditoria interna', TRUE)
+    (gen_random_uuid(), NOW(), NOW(), 'portal do colaborador', 'acesso básico ao sistema', TRUE),
+    (gen_random_uuid(), NOW(), NOW(), 'relatórios gerenciais', 'dashboards e relatórios', TRUE),
+    (gen_random_uuid(), NOW(), NOW(), 'gestão financeira', 'funções gerais financeiras', TRUE),
+    (gen_random_uuid(), NOW(), NOW(), 'aprovador financeiro', 'aprova solicitações financeiras', TRUE),
+    (gen_random_uuid(), NOW(), NOW(), 'solicitante financeiro', 'cria solicitações financeiras', TRUE),
+    (gen_random_uuid(), NOW(), NOW(), 'administrador rh', 'acesso administrativo do rh', TRUE),
+    (gen_random_uuid(), NOW(), NOW(), 'colaborador rh', 'acesso operacional do rh', TRUE),
+    (gen_random_uuid(), NOW(), NOW(), 'gestão de estoque', 'controle de estoque', TRUE),
+    (gen_random_uuid(), NOW(), NOW(), 'compras', 'processos de compras', TRUE),
+    (gen_random_uuid(), NOW(), NOW(), 'auditoria', 'acesso auditoria interna', TRUE)
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO modules.modules_mutually_exclusive (id, module_a_name, module_b_name) VALUES
-    (gen_random_uuid(), 'Aprovador Financeiro', 'Solicitante Financeiro'),
-    (gen_random_uuid(), 'Solicitante Financeiro', 'Aprovador Financeiro'),
-    (gen_random_uuid(), 'Administrador RH', 'Colaborador RH'),
-    (gen_random_uuid(), 'Colaborador RH', 'Administrador RH')
+    (gen_random_uuid(), 'aprovador financeiro', 'solicitante financeiro'),
+    (gen_random_uuid(), 'solicitante financeiro', 'aprovador financeiro'),
+    (gen_random_uuid(), 'administrador rh', 'colaborador rh'),
+    (gen_random_uuid(), 'colaborador rh', 'administrador rh')
 ON CONFLICT (module_a_name, module_b_name) DO NOTHING;
 
 INSERT INTO modules.modules_allowed_departments (id, module_name, department) VALUES
-    (gen_random_uuid(), 'Portal do Colaborador', 'TI'),
-    (gen_random_uuid(), 'Portal do Colaborador', 'Financeiro'),
-    (gen_random_uuid(), 'Portal do Colaborador', 'RH'),
-    (gen_random_uuid(), 'Portal do Colaborador', 'Operações'),
-    (gen_random_uuid(), 'Portal do Colaborador', 'Outros')
+    (gen_random_uuid(), 'portal do colaborador', 'ti'),
+    (gen_random_uuid(), 'portal do colaborador', 'financeiro'),
+    (gen_random_uuid(), 'portal do colaborador', 'rh'),
+    (gen_random_uuid(), 'portal do colaborador', 'operações'),
+    (gen_random_uuid(), 'portal do colaborador', 'outros')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO modules.modules_allowed_departments (id, module_name, department) VALUES
-    (gen_random_uuid(), 'Relatórios Gerenciais', 'TI'),
-    (gen_random_uuid(), 'Relatórios Gerenciais', 'Financeiro'),
-    (gen_random_uuid(), 'Relatórios Gerenciais', 'RH'),
-    (gen_random_uuid(), 'Relatórios Gerenciais', 'Operações'),
-    (gen_random_uuid(), 'Relatórios Gerenciais', 'Outros')
+    (gen_random_uuid(), 'relatórios gerenciais', 'ti'),
+    (gen_random_uuid(), 'relatórios gerenciais', 'financeiro'),
+    (gen_random_uuid(), 'relatórios gerenciais', 'rh'),
+    (gen_random_uuid(), 'relatórios gerenciais', 'operações'),
+    (gen_random_uuid(), 'relatórios gerenciais', 'outros')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO modules.modules_allowed_departments (id, module_name, department) VALUES
-    (gen_random_uuid(), 'Gestão Financeira', 'TI'),
-    (gen_random_uuid(), 'Gestão Financeira', 'Financeiro')
+    (gen_random_uuid(), 'gestão financeira', 'ti'),
+    (gen_random_uuid(), 'gestão financeira', 'financeiro')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO modules.modules_allowed_departments (id, module_name, department) VALUES
-    (gen_random_uuid(), 'Aprovador Financeiro', 'TI'),
-    (gen_random_uuid(), 'Aprovador Financeiro', 'Financeiro')
+    (gen_random_uuid(), 'aprovador financeiro', 'ti'),
+    (gen_random_uuid(), 'aprovador financeiro', 'financeiro')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO modules.modules_allowed_departments (id, module_name, department) VALUES
-    (gen_random_uuid(), 'Solicitante Financeiro', 'TI'),
-    (gen_random_uuid(), 'Solicitante Financeiro', 'Financeiro')
+    (gen_random_uuid(), 'solicitante financeiro', 'ti'),
+    (gen_random_uuid(), 'solicitante financeiro', 'financeiro')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO modules.modules_allowed_departments (id, module_name, department) VALUES
-    (gen_random_uuid(), 'Administrador RH', 'TI'),
-    (gen_random_uuid(), 'Administrador RH', 'RH')
+    (gen_random_uuid(), 'administrador rh', 'ti'),
+    (gen_random_uuid(), 'administrador rh', 'rh')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO modules.modules_allowed_departments (id, module_name, department) VALUES
-    (gen_random_uuid(), 'Colaborador RH', 'TI'),
-    (gen_random_uuid(), 'Colaborador RH', 'RH')
+    (gen_random_uuid(), 'colaborador rh', 'ti'),
+    (gen_random_uuid(), 'colaborador rh', 'rh')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO modules.modules_allowed_departments (id, module_name, department) VALUES
-    (gen_random_uuid(), 'Gestão de Estoque', 'TI'),
-    (gen_random_uuid(), 'Gestão de Estoque', 'Operações')
+    (gen_random_uuid(), 'gestão de estoque', 'ti'),
+    (gen_random_uuid(), 'gestão de estoque', 'operações')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO modules.modules_allowed_departments (id, module_name, department) VALUES
-    (gen_random_uuid(), 'Compras', 'TI'),
-    (gen_random_uuid(), 'Compras', 'Operações')
+    (gen_random_uuid(), 'compras', 'ti'),
+    (gen_random_uuid(), 'compras', 'operações')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO modules.modules_allowed_departments (id, module_name, department) VALUES
-    (gen_random_uuid(), 'Auditoria', 'TI')
+    (gen_random_uuid(), 'auditoria', 'ti')
 ON CONFLICT DO NOTHING;
 -- ============================================================

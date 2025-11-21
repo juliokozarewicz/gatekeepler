@@ -24,7 +24,7 @@ public record ModulesCreateRequestDTO(
     @Size(max = 500, message = "{validation_many_characters}")
     @Pattern(
         regexp = "^(?=.*[a-z])(?!.*(.)\\1{4})[\\p{L}0-9 .,!?:;\\-]{20,500}$",
-        message = "{validation_disallowed_characters}" //
+        message = "{validation_invalid_justification_size}" //
     )
     String justification,
 
