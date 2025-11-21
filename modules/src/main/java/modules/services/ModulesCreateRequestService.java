@@ -55,7 +55,6 @@ public class ModulesCreateRequestService {
 
     // ===================================================== ( constructor end )
 
-    @Transactional
     public ResponseEntity execute(
 
         Map<String, Object> credentialsData,
@@ -84,6 +83,19 @@ public class ModulesCreateRequestService {
             requestedModules.size() > 3
         ) {
 
+            commitRequestStatus(
+                protocolNumber,
+                "negado",
+                messageSource.getMessage(
+                    "response_many_modules_error",
+                    null,
+                    locale
+                ),
+                modulesCreateRequestDTO,
+                idUser.toString()
+
+            );
+
             errorHandler.customErrorThrow(
                 400,
                 messageSource.getMessage(
@@ -111,6 +123,18 @@ public class ModulesCreateRequestService {
 
             if (hasActiveRequestForModule) {
 
+                commitRequestStatus(
+                    protocolNumber,
+                    "negado",
+                    messageSource.getMessage(
+                        "response_already_requested_error",
+                        null,
+                        locale
+                    ) + " " + moduleName.toLowerCase(),
+                    modulesCreateRequestDTO,
+                    idUser.toString()
+                );
+
                 errorHandler.customErrorThrow(
                     400,
                     messageSource.getMessage(
@@ -135,6 +159,18 @@ public class ModulesCreateRequestService {
 
         if ( modules.size() != requestedModules.size() ) {
 
+            commitRequestStatus(
+                protocolNumber,
+                "negado",
+                messageSource.getMessage(
+                    "request_modules_dont_exist",
+                    null,
+                    locale
+                ),
+                modulesCreateRequestDTO,
+                idUser.toString()
+            );
+
             errorHandler.customErrorThrow(
                 400,
                 messageSource.getMessage(
@@ -157,6 +193,18 @@ public class ModulesCreateRequestService {
 
             if (!hasAccess) {
 
+                commitRequestStatus(
+                    protocolNumber,
+                    "negado",
+                    messageSource.getMessage(
+                        "request_module_not_allowed_error",
+                        null,
+                        locale
+                    ) + " " + moduleName.toLowerCase(),
+                    modulesCreateRequestDTO,
+                    idUser.toString()
+                );
+
                 errorHandler.customErrorThrow(
                     400,
                     messageSource.getMessage(
@@ -172,23 +220,14 @@ public class ModulesCreateRequestService {
 
         // Commit DB
         // ---------------------------------------------------------------------
-        ModuleRequestEntity newRequest = new ModuleRequestEntity();
-        newRequest.setId(UUID.randomUUID());
-        newRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        newRequest.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        newRequest.setProtocolNumber(protocolNumber);
-        newRequest.setModuleNamesRequested(
-            modulesCreateRequestDTO.modules().stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toList())
-        );
-        newRequest.setJustification(modulesCreateRequestDTO.justification());
-        newRequest.setUrgent(modulesCreateRequestDTO.urgent());
-        newRequest.setStatus("ativo");
-        newRequest.setDenialReason(null);
-        newRequest.setIdUser(idUser.toString());
+        commitRequestStatus(
+            protocolNumber,
+            "ativo",
+            null,
+            modulesCreateRequestDTO,
+            idUser.toString()
 
-        moduleRequestRepository.save(newRequest);
+        );
         // ---------------------------------------------------------------------
 
         // response (links)
@@ -220,6 +259,33 @@ public class ModulesCreateRequestService {
         String date = nowUtc.toString().substring(0, 10).replace("-", "");
         String uniqueId = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         return String.format("%s-%s-%s", prefix, date, uniqueId);
+    }
+
+    // Unified method for both active and denied requests
+    private void commitRequestStatus(
+        String protocolNumber,
+        String status,
+        String denialReason,
+        ModulesCreateRequestDTO modulesCreateRequestDTO,
+        String idUser
+    ) {
+        ModuleRequestEntity newRequest = new ModuleRequestEntity();
+        newRequest.setId(UUID.randomUUID());
+        newRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
+        newRequest.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
+        newRequest.setProtocolNumber(protocolNumber);
+        newRequest.setModuleNamesRequested(
+            modulesCreateRequestDTO.modules().stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList())
+        );
+        newRequest.setJustification(modulesCreateRequestDTO.justification());
+        newRequest.setUrgent(modulesCreateRequestDTO.urgent());
+        newRequest.setStatus(status);
+        newRequest.setDenialReason(denialReason);
+        newRequest.setIdUser(idUser);
+
+        moduleRequestRepository.save(newRequest);
     }
 
 }
