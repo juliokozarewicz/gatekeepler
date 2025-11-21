@@ -25,4 +25,6 @@ public interface ModulesRequestRepository
     @Query("SELECT m FROM ModulesRequestEntity m JOIN m.moduleNamesRequested mn WHERE mn = :moduleName")
     List<ModulesRequestEntity> findByModuleNamesRequested(@Param("moduleName") String moduleName);
 
+    Optional<ModulesRequestEntity> findByIdAndIdUser(UUID id, String idUser);
+
 }

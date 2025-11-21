@@ -3,7 +3,6 @@ package modules.services;
 import modules.dtos.ModulesReadRequestsDTO;
 import modules.exceptions.ErrorHandler;
 import modules.persistence.entities.ModulesRequestEntity;
-import modules.persistence.repositories.ModulesAllowedDepartmentsRepository;
 import modules.persistence.repositories.ModulesRequestRepository;
 import modules.persistence.specifications.ModulesReadRequestsSpecification;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,20 +31,17 @@ public class ModulesReadRequestsService {
     // -------------------------------------------------------------------------
 
     private final MessageSource messageSource;
-    private final ModulesAllowedDepartmentsRepository modulesAllowedDepartmentsRepository;
     private final ErrorHandler errorHandler;
     private final ModulesRequestRepository modulesRequestRepository;
 
     public ModulesReadRequestsService(
 
         MessageSource messageSource,
-        ModulesAllowedDepartmentsRepository modulesAllowedDepartmentsRepository,
         ModulesRequestRepository modulesRequestRepository,
         ErrorHandler errorHandler
 
     ) {
         this.messageSource = messageSource;
-        this.modulesAllowedDepartmentsRepository = modulesAllowedDepartmentsRepository;
         this.errorHandler = errorHandler;
         this.modulesRequestRepository = modulesRequestRepository;
     }
