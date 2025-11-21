@@ -16,7 +16,7 @@ public interface ModulesRequestRepository
     extends JpaRepository<ModulesRequestEntity, UUID>,
     JpaSpecificationExecutor<ModulesRequestEntity> {
 
-    List<ModulesRequestEntity> findByIdUser(String userId);
+    List<ModulesRequestEntity> findByIdUser(String idUser);
 
     Optional<ModulesRequestEntity> findByProtocolNumber(String protocolNumber);
 

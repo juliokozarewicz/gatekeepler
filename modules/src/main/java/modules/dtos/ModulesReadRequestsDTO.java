@@ -2,6 +2,9 @@ package modules.dtos;
 
 import jakarta.validation.constraints.Size;
 
+import java.time.Instant;
+import java.time.LocalDate;
+
 public record ModulesReadRequestsDTO(
 
     @Size(max = 50, message = "{validation_many_characters}")
@@ -13,10 +16,12 @@ public record ModulesReadRequestsDTO(
     @Size(max = 255, message = "{validation_many_characters}")
     String status,
 
-    @Size(max = 50, message = "{validation_many_characters}")
-    String period,
+    Boolean urgent,
 
-    @Size(max = 10, message = "{validation_many_characters}")
-    String urgency
+    Integer page,
+
+    LocalDate startDate,
+
+    LocalDate endDate
 
 ) {}

@@ -129,7 +129,7 @@ public class ModulesCreateRequestService {
                         "response_already_requested_error",
                         null,
                         locale
-                    ) + " " + moduleName.toLowerCase(),
+                    ) + " " + moduleName.toUpperCase(),
                     modulesCreateRequestDTO,
                     idUser.toString()
                 );
@@ -140,7 +140,7 @@ public class ModulesCreateRequestService {
                         "response_already_requested_error",
                         null,
                         locale
-                    ) + " " + moduleName.toLowerCase()
+                    ) + " " + moduleName.toUpperCase()
                 );
 
             }
@@ -199,7 +199,7 @@ public class ModulesCreateRequestService {
                         "request_module_not_allowed_error",
                         null,
                         locale
-                    ) + " " + moduleName.toLowerCase(),
+                    ) + " " + moduleName.toUpperCase(),
                     modulesCreateRequestDTO,
                     idUser.toString()
                 );
@@ -210,7 +210,7 @@ public class ModulesCreateRequestService {
                         "request_module_not_allowed_error",
                         null,
                         locale
-                    ) + " " + moduleName.toLowerCase()
+                    ) + " " + moduleName.toUpperCase()
                 );
 
             }

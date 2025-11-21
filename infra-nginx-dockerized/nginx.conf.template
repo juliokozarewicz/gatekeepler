@@ -19,7 +19,7 @@ http {
     # rate limiting and bots config
     # -------------------------------------------------------------------------------
     limit_req_zone binary_remote_addr zone=critical_zone:100m rate=5r/m;
-    limit_req_zone binary_remote_addr zone=general_zone:150m rate=20r/m;
+    limit_req_zone binary_remote_addr zone=general_zone:150m rate=100r/m;
     limit_req_zone binary_remote_addr zone=almost_free_zone:200m rate=100r/m;
     limit_conn_zone binary_remote_addr zone=conn_limit_zone:100m;
     limit_conn conn_limit_zone 10;

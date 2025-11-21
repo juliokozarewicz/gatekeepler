@@ -9,10 +9,15 @@ import modules.persistence.specifications.ModulesReadRequestsSpecification;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -62,17 +67,58 @@ public class ModulesReadRequestsService {
         String emailUser = (String) credentialsData.get("email".toLowerCase());
         String departmentUser = (String) credentialsData.get("department".toLowerCase());
 
-        // query db
-        Specification<ModulesRequestEntity> spec = ModulesReadRequestsSpecification.filter(
-            modulesReadRequestsDTO.protocolNumber(),
-            modulesReadRequestsDTO.moduleName(),
-            modulesReadRequestsDTO.status(),
-            modulesReadRequestsDTO.urgency(),
-            idUser.toString()
+        // Filter
+        Specification<ModulesRequestEntity> spec =
+            ModulesReadRequestsSpecification.filter(
+                modulesReadRequestsDTO.protocolNumber(),
+                modulesReadRequestsDTO.moduleName(),
+                modulesReadRequestsDTO.status(),
+                modulesReadRequestsDTO.urgent(),
+                modulesReadRequestsDTO.startDate(),
+                modulesReadRequestsDTO.endDate(),
+                idUser.toString()
+            );
+
+        // Pagination
+        // ---------------------------------------------------------------------
+        int pageNumber = modulesReadRequestsDTO.page() != null
+        ? modulesReadRequestsDTO.page()
+        : 0;
+
+        Pageable pageable = PageRequest.of(
+            pageNumber,
+            10,
+            Sort.by(Sort.Direction.DESC, "createdAt")
         );
 
-        // list all categories
-        List<ModulesRequestEntity> readRequests = modulesRequestRepository.findAll(spec);
+        Page<ModulesRequestEntity> page = modulesRequestRepository
+            .findAll(spec, pageable);
+        // ---------------------------------------------------------------------
+
+        // Entity
+        List<Map<String, Object>> result = page.getContent().stream()
+            .map(req -> {
+
+                Map<String, Object> map = new LinkedHashMap<>();
+
+                map.put("protocolo", req.getProtocolNumber());
+                map.put("modulosSolicitados", req.getModuleNamesRequested());
+                map.put("status", req.getStatus());
+                map.put("justificativa", req.getJustification());
+                map.put("urgente", req.isUrgent());
+                map.put("dataSolicitacao", req.getCreatedAt());
+                map.put("dataExpiracao", req.getCreatedAt().plus(180, ChronoUnit.DAYS));
+                map.put("motivoNegacao", req.getDenialReason());
+
+                return map;
+            })
+            .toList();
+
+        // Meta
+        Map<String, Object> metaData = new LinkedHashMap<>();
+        metaData.put("page", page.getNumber());
+        metaData.put("totalPages", page.getTotalPages());
+        metaData.put("totalItems", page.getTotalElements());
 
         // response (links)
         Map<String, String> customLinks = new LinkedHashMap<>();
@@ -88,7 +134,8 @@ public class ModulesReadRequestsService {
                     locale
                 )
             )
-            .data(readRequests)
+            .data(result)
+            .meta(metaData)
             .links(customLinks)
             .build();
 

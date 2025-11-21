@@ -900,7 +900,7 @@ public class DocumentationJson {
                                                 },
                                                 "message": {
                                                     "type": "string",
-                                                    "example": "Request denied. Reason: You already have an active request for the module: portal do colaborador"
+                                                    "example": "Request denied. Reason: You already have an active request for the module: PORTAL DO COLABORADOR"
                                                 }
                                             }
                                         },
@@ -921,7 +921,7 @@ public class DocumentationJson {
                                                 "value": {
                                                     "statusCode": 400,
                                                     "statusMessage": "error",
-                                                    "message": "Request denied. Reason: You already have an active request for the module: portal do colaborador"
+                                                    "message": "Request denied. Reason: You already have an active request for the module: PORTAL DO COLABORADOR"
                                                 }
                                             },
                 
@@ -939,7 +939,7 @@ public class DocumentationJson {
                                                 "value": {
                                                     "statusCode": 400,
                                                     "statusMessage": "error",
-                                                    "message": "Request denied. You do not have access to the module: portal do colaborador"
+                                                    "message": "Request denied. You do not have access to the module: PORTAL DO COLABORADOR"
                                                 }
                                             }
                                         }
