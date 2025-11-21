@@ -954,6 +954,200 @@ public class DocumentationJson {
 
             .append(
                 """
+                # ==============================================================
+                "/MODULES_BASE_URL_REPLACE/read-requests": {
+                    "get": {
+                        "summary": "List user module access requests",
+                        "description": "Retrieves all module access requests created by the authenticated user. Supports filters such as protocol number, module name, status, urgency, and date range. Pagination is available via the `page` parameter. Each returned item includes protocol details, requested modules, status, justification, urgency, request date, expiration date, denial reason, and request ID.",
+                        "tags": ["MODULES"],
+                        "security": [{ "BearerAuth": [] }],
+                        "parameters": [
+                            {
+                                "name": "protocolNumber",
+                                "in": "query",
+                                "required": false,
+                                "schema": {
+                                    "type": "string",
+                                    "maxLength": 50
+                                },
+                                "description": "Filter by full or partial protocol number."
+                            },
+                            {
+                                "name": "moduleName",
+                                "in": "query",
+                                "required": false,
+                                "schema": {
+                                    "type": "string",
+                                    "maxLength": 255
+                                },
+                                "description": "Filter by a specific module name."
+                            },
+                            {
+                                "name": "status",
+                                "in": "query",
+                                "required": false,
+                                "schema": {
+                                    "type": "string",
+                                    "maxLength": 255
+                                },
+                                "description": "Filter by request status (e.g., 'active', 'denied', 'approved')."
+                            },
+                            {
+                                "name": "urgent",
+                                "in": "query",
+                                "required": false,
+                                "schema": {
+                                    "type": "boolean"
+                                },
+                                "description": "Filter by urgency."
+                            },
+                            {
+                                "name": "startDate",
+                                "in": "query",
+                                "required": false,
+                                "schema": {
+                                    "type": "string",
+                                    "format": "date",
+                                    "example": "2029-11-21"
+                                },
+                                "description": "Start date for filtering the request creation range. Must follow `YYYY-MM-DD` (ISO-8601). Examples: `2029-11-21`, `2024-01-01`. Invalid formats: `21/11/2029`, `2029/11/21`, `2029-11-21T00:00:00`."
+                            },
+                            {
+                                "name": "endDate",
+                                "in": "query",
+                                "required": false,
+                                "schema": {
+                                    "type": "string",
+                                    "format": "date",
+                                    "example": "2030-01-10"
+                                },
+                                "description": "End date for filtering the request creation range. Must follow `YYYY-MM-DD` (ISO-8601). Examples: `2030-01-10`, `2025-07-30`. Invalid formats: `10-01-2030`, `2030.01.10`, `2030-01-10T12:00:00Z`."
+                            },
+                            {
+                                "name": "page",
+                                "in": "query",
+                                "required": false,
+                                "schema": {
+                                    "type": "integer",
+                                    "example": 0
+                                },
+                                "description": "Page number for pagination (default is 0)."
+                            }
+                        ],
+                
+                        "responses": {
+                            "200": {
+                                "description": "Requests retrieved successfully.",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "statusCode": {
+                                                    "type": "integer",
+                                                    "example": 200
+                                                },
+                                                "statusMessage": {
+                                                    "type": "string",
+                                                    "example": "success"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Data received successfully."
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "format": "uuid",
+                                                                "example": "8fd0a9ca-23f2-4dd5-92d2-77a0af91c567"
+                                                            },
+                                                            "protocol": { "type": "string" },
+                                                            "requestedModules": {
+                                                                "type": "array",
+                                                                "items": { "type": "string" }
+                                                            },
+                                                            "status": { "type": "string" },
+                                                            "justification": { "type": "string" },
+                                                            "urgent": { "type": "boolean" },
+                                                            "requestDate": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            },
+                                                            "expirationDate": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            },
+                                                            "denialReason": { "type": "string" }
+                                                        }
+                                                    }
+                                                },
+                                                "meta": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "page": { "type": "integer" },
+                                                        "totalPages": { "type": "integer" },
+                                                        "totalItems": { "type": "integer" }
+                                                    }
+                                                },
+                                                "links": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "self": { "type": "string" }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "examples": {
+                                            "responseExample": {
+                                                "summary": "Successful data retrieval",
+                                                "value": {
+                                                    "statusCode": 200,
+                                                    "statusMessage": "success",
+                                                    "message": "Data received successfully.",
+                                                    "data": [
+                                                        {
+                                                            "id": "8fd0a9ca-23f2-4dd5-92d2-77a0af91c567",
+                                                            "protocol": "SOL-20251121-124D",
+                                                            "requestedModules": [
+                                                                "audit",
+                                                                "employee portal",
+                                                                "management reports"
+                                                            ],
+                                                            "status": "denied",
+                                                            "justification": "Example justification text.",
+                                                            "urgent": false,
+                                                            "requestDate": "2029-11-21T20:12:41.326Z",
+                                                            "expirationDate": "2030-05-20T20:12:41.326Z",
+                                                            "denialReason": "Request denied. Reason: You already have an active request for the module: EMPLOYEE PORTAL"
+                                                        }
+                                                    ],
+                                                    "meta": {
+                                                        "page": 0,
+                                                        "totalPages": 1,
+                                                        "totalItems": 1
+                                                    },
+                                                    "links": {
+                                                        "self": "/api/v1/modules/read-requests"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                # ==============================================================
+                """
+            )
+
+            .append(
+                """
                 }}
                 # ==============================================================
                 """

@@ -100,15 +100,15 @@ public class ModulesReadRequestsService {
             .map(req -> {
 
                 Map<String, Object> map = new LinkedHashMap<>();
-
-                map.put("protocolo", req.getProtocolNumber());
-                map.put("modulosSolicitados", req.getModuleNamesRequested());
+                map.put("id", req.getId());
+                map.put("protocol", req.getProtocolNumber());
+                map.put("requestedModules", req.getModuleNamesRequested());
                 map.put("status", req.getStatus());
-                map.put("justificativa", req.getJustification());
-                map.put("urgente", req.isUrgent());
-                map.put("dataSolicitacao", req.getCreatedAt());
-                map.put("dataExpiracao", req.getCreatedAt().plus(180, ChronoUnit.DAYS));
-                map.put("motivoNegacao", req.getDenialReason());
+                map.put("justification", req.getJustification());
+                map.put("urgent", req.isUrgent());
+                map.put("requestDate", req.getCreatedAt());
+                map.put("expirationDate", req.getCreatedAt().plus(180, ChronoUnit.DAYS));
+                map.put("denialReason", req.getDenialReason());
 
                 return map;
             })
@@ -122,7 +122,7 @@ public class ModulesReadRequestsService {
 
         // response (links)
         Map<String, String> customLinks = new LinkedHashMap<>();
-        customLinks.put("self", "/" + modulesBaseURL + "/create-request");
+        customLinks.put("self", "/" + modulesBaseURL + "/read-requests");
 
         StandardResponseService response = new StandardResponseService.Builder()
             .statusCode(200)
