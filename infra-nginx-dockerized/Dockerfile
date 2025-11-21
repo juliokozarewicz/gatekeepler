@@ -11,7 +11,6 @@ RUN mkdir -p /var/log/nginx /tmp/nginx_cache
 
 # Comando de entrada: substitui variáveis e inicia nginx
 CMD envsubst ' \
-    $PRIVATE_DOMAIN \
     $HELLOWORLD_PORT \
     $DOCUMENTATION_PORT \
     $ACCOUNTS_PORT \

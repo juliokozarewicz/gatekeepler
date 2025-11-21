@@ -53,10 +53,23 @@ http {
     proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
     # -------------------------------------------------------------------------------
 
+    # ---------------------------------------------------------- (load balancer init)
+    upstream modules_backend {
+        server modules1:${MODULES_PORT};
+        server modules2:${MODULES_PORT};
+        server modules3:${MODULES_PORT};
+    }
+    # ----------------------------------------------------------- (load balancer end)
+
     server {
 
         listen 80;
         server_name $MAIN_DOMAIN www.$MAIN_DOMAIN;
+
+        # **CONFIGURAÇÕES DE TIMEOUT ADICIONADAS/AUMENTADAS**
+        proxy_connect_timeout 30s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
 
         # size request limit
         client_max_body_size 10M;
@@ -165,25 +178,26 @@ http {
         # [ HELLO WORLD - Static Files ]
         location /api/v1/helloworld/static {
             limit_req zone=general_zone burst=5 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$HELLOWORLD_PORT;
+            proxy_pass http://helloworld:$HELLOWORLD_PORT;
         }
 
         # [ HELLO WORLD - Helloworld ]
         location /api/v1/helloworld {
             limit_req zone=general_zone burst=5 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$HELLOWORLD_PORT;
+            proxy_pass http://helloworld:$HELLOWORLD_PORT;
         }
         # --------------------------------------------------------- (end hello world)
 
         # ------------------------------------------------------ (init documentation)
 
+        # **REVISADO: Usando o nome do serviço 'documentation'**
         # [ DOCUMENTATION - Static Files ]
         location /api/v1/documentation/static {
             limit_req zone=general_zone burst=10 nodelay;
             proxy_cache static_cache;
             proxy_cache_valid 200 10m;
             proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-            proxy_pass http://$PRIVATE_DOMAIN:$DOCUMENTATION_PORT;
+            proxy_pass http://documentation:$DOCUMENTATION_PORT;
         }
 
         # [ DOCUMENTATION - Stoplight Elements ]
@@ -192,7 +206,7 @@ http {
             proxy_cache static_cache;
             proxy_cache_valid 200 10m;
             proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-            proxy_pass http://$PRIVATE_DOMAIN:$DOCUMENTATION_PORT;
+            proxy_pass http://documentation:$DOCUMENTATION_PORT;
         }
 
         # [ DOCUMENTATION - Swagger ]
@@ -201,7 +215,7 @@ http {
             proxy_cache static_cache;
             proxy_cache_valid 200 10m;
             proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-            proxy_pass http://$PRIVATE_DOMAIN:$DOCUMENTATION_PORT;
+            proxy_pass http://documentation:$DOCUMENTATION_PORT;
         }
 
         # [ DOCUMENTATION - JSON ]
@@ -210,7 +224,7 @@ http {
             proxy_cache static_cache;
             proxy_cache_valid 200 5m;
             proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-            proxy_pass http://$PRIVATE_DOMAIN:$DOCUMENTATION_PORT;
+            proxy_pass http://documentation:$DOCUMENTATION_PORT;
         }
 
         # [ DOCUMENTATION - Redocly ]
@@ -219,46 +233,47 @@ http {
             proxy_cache static_cache;
             proxy_cache_valid 200 10m;
             proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-            proxy_pass http://$PRIVATE_DOMAIN:$DOCUMENTATION_PORT;
+            proxy_pass http://documentation:$DOCUMENTATION_PORT;
         }
         # ------------------------------------------------------- (end documentation)
 
         # ----------------------------------------------------------- (init accounts)
 
+        # **REVISADO: Usando o nome do serviço 'accounts'**
         # [ ACCOUNTS - Static Files ]
         location /api/v1/accounts/static {
             limit_req zone=general_zone burst=5 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
+            proxy_pass http://accounts:$ACCOUNTS_PORT;
         }
 
         # [ ACCOUNTS - Signup ]
         location /api/v1/accounts/signup {
             limit_req zone=critical_zone burst=1 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
+            proxy_pass http://accounts:$ACCOUNTS_PORT;
         }
 
         # [ ACCOUNTS - Login ]
         location /api/v1/accounts/login {
             limit_req zone=critical_zone burst=3 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
+            proxy_pass http://accounts:$ACCOUNTS_PORT;
         }
 
         # [ ACCOUNTS - Refresh Login ]
         location /api/v1/accounts/refresh-login {
             limit_req zone=almost_free_zone burst=5 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
+            proxy_pass http://accounts:$ACCOUNTS_PORT;
         }
 
         # [ ACCOUNTS - Get Profile ]
         location /api/v1/accounts/get-profile {
             limit_req zone=general_zone burst=5 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
+            proxy_pass http://accounts:$ACCOUNTS_PORT;
         }
 
         # [ ACCOUNTS - Update Profile ]
         location /api/v1/accounts/update-profile {
             limit_req zone=general_zone burst=5 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$ACCOUNTS_PORT;
+            proxy_pass http://accounts:$ACCOUNTS_PORT;
         }
         # ------------------------------------------------------------ (end accounts)
 
@@ -266,8 +281,8 @@ http {
 
         # [ MODULES - Create Request ]
         location /api/v1/modules/create-request {
+            proxy_pass http://modules_backend;
             limit_req zone=general_zone burst=5 nodelay;
-            proxy_pass http://$PRIVATE_DOMAIN:$MODULES_PORT;
         }
         # ------------------------------------------------------------- (end modules)
 

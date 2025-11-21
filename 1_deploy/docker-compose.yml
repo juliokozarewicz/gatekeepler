@@ -2,7 +2,6 @@ services:
 
   nginx:
     container_name: nginx
-    hostname: nginx
     build: ../infra-nginx-dockerized
     env_file:
       - .env
@@ -10,14 +9,14 @@ services:
       - "80:80"
     networks:
       - spring_net
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       - helloworld
+      - modules1
+      - modules2
+      - modules3
 
   database:
     container_name: database
-    hostname: database
     env_file:
       - .env
     image: postgres:17
@@ -34,7 +33,6 @@ services:
 
   accounts_redis:
     container_name: accounts_redis
-    hostname: accounts_redis
     env_file:
       - .env
     image: redis:latest
@@ -54,7 +52,6 @@ services:
 
   documentation:
     container_name: documentation
-    hostname: documentation
     env_file:
       - .env
     build: ../documentation
@@ -65,7 +62,6 @@ services:
 
   helloworld:
     container_name: helloworld
-    hostname: helloworld
     env_file:
       - .env
     build: ../helloworld
@@ -76,7 +72,6 @@ services:
 
   accounts:
     container_name: accounts
-    hostname: accounts
     env_file:
       - .env
     build: ../accounts
@@ -88,14 +83,34 @@ services:
       - database
       - accounts_redis
 
-  modules:
-    container_name: modules
-    hostname: modules
+  modules1:
+    build: ../modules
     env_file:
       - .env
+    expose:
+      - "${MODULES_PORT}"
+    networks:
+      - spring_net
+    depends_on:
+      - accounts
+
+  modules2:
     build: ../modules
-    ports:
-      - "${MODULES_PORT}:${MODULES_PORT}"
+    env_file:
+      - .env
+    expose:
+      - "${MODULES_PORT}"
+    networks:
+      - spring_net
+    depends_on:
+      - accounts
+
+  modules3:
+    build: ../modules
+    env_file:
+      - .env
+    expose:
+      - "${MODULES_PORT}"
     networks:
       - spring_net
     depends_on:
