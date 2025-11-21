@@ -21,6 +21,9 @@ public class DocumentationJson {
 
     @Value("${ACCOUNTS_BASE_URL}")
     private String accountsBaseURL;
+
+    @Value("${MODULES_BASE_URL}")
+    private String modulesBaseURL;
     // -------------------------------------------------------------------------
 
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -788,6 +791,169 @@ public class DocumentationJson {
 
             .append(
                 """
+                "/MODULES_BASE_URL_REPLACE/create-request": {
+                    "post": {
+                        "summary": "Submit module access request",
+                        "description": "This endpoint allows authenticated users to request access to one or more system modules. A justification must be provided, and the request may be marked as urgent. The request is validated against business rules, existing active requests, allowed departments, and module availability. If valid, a protocol number is generated and the request becomes active. Otherwise, it is denied and stored with a rejection reason.",
+                        "tags": [
+                            "MODULES"
+                        ],
+                        "security": [
+                            {
+                                "BearerAuth": []
+                            }
+                        ],
+                        "requestBody": {
+                            "required": true,
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "modules": {
+                                                "type": "array",
+                                                "description": "List of requested modules (minimum 1, maximum 3). Each module must be a valid string.",
+                                                "items": {
+                                                    "type": "string",
+                                                    "example": "portal do colaborador"
+                                                }
+                                            },
+                                            "justification": {
+                                                "type": "string",
+                                                "description": "Text justification with 20 to 500 characters following validation rules.",
+                                                "example": "I need access to these modules to perform my daily activities."
+                                            },
+                                            "urgent": {
+                                                "type": "boolean",
+                                                "description": "Whether the request is urgent.",
+                                                "example": false
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                
+                        "responses": {
+                
+                            "201": {
+                                "description": "Request created successfully.",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "statusCode": {
+                                                    "type": "integer",
+                                                    "example": 201
+                                                },
+                                                "statusMessage": {
+                                                    "type": "string",
+                                                    "example": "success"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Your request has been successfully created, and your access is now available! Your protocol number is: SOL-20251121-E18F"
+                                                },
+                                                "links": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "self": {
+                                                            "type": "string",
+                                                            "example": "/MODULES_BASE_URL_REPLACE/create-request"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "examples": {
+                                            "requestCreated": {
+                                                "summary": "Request created successfully",
+                                                "value": {
+                                                    "statusCode": 201,
+                                                    "statusMessage": "success",
+                                                    "message": "Your request has been successfully created, and your access is now available! Your protocol number is: SOL-20251121-E18F",
+                                                    "links": {
+                                                        "self": "/MODULES_BASE_URL_REPLACE/create-request"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                
+                            "400": {
+                                "description": "Validation errors or business rule violations.",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "statusCode": {
+                                                    "type": "integer",
+                                                    "example": 400
+                                                },
+                                                "statusMessage": {
+                                                    "type": "string",
+                                                    "example": "error"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Request denied. Reason: You already have an active request for the module: portal do colaborador"
+                                                }
+                                            }
+                                        },
+                
+                                        "examples": {
+                
+                                            "manyModules": {
+                                                "summary": "Modules list invalid",
+                                                "value": {
+                                                    "statusCode": 400,
+                                                    "statusMessage": "error",
+                                                    "message": "Request denied. Reason: You must request between 1 and 3 modules."
+                                                }
+                                            },
+                
+                                            "alreadyRequested": {
+                                                "summary": "User already has active request for the module",
+                                                "value": {
+                                                    "statusCode": 400,
+                                                    "statusMessage": "error",
+                                                    "message": "Request denied. Reason: You already have an active request for the module: portal do colaborador"
+                                                }
+                                            },
+                
+                                            "modulesDontExist": {
+                                                "summary": "Modules do not exist or are inactive",
+                                                "value": {
+                                                    "statusCode": 400,
+                                                    "statusMessage": "error",
+                                                    "message": "Request denied. Reason: Some of the requested modules do not exist or are not available."
+                                                }
+                                            },
+                
+                                            "moduleNotAllowed": {
+                                                "summary": "User department not allowed to request a module",
+                                                "value": {
+                                                    "statusCode": 400,
+                                                    "statusMessage": "error",
+                                                    "message": "Request denied. You do not have access to the module: portal do colaborador"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                """
+            )
+
+            .append(
+                """
                 }}
                 # ==============================================================
                 """
@@ -799,7 +965,8 @@ public class DocumentationJson {
             .replace("TITLE_REPLACE", applicationTitle.toUpperCase())
             .replace("PUBLIC_DOMAIN_REPLACE", publicDomain.split(",")[0].trim())
             .replace("HELLOWORLD_BASE_URL_REPLACE", helloWorldBaseURL)
-            .replace("ACCOUNTS_BASE_URL_REPLACE", accountsBaseURL);
+            .replace("ACCOUNTS_BASE_URL_REPLACE", accountsBaseURL)
+            .replace("MODULES_BASE_URL_REPLACE", modulesBaseURL);
         // ---------------------------------------------------------------------
 
     }
