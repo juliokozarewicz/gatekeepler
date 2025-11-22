@@ -1122,7 +1122,7 @@ public class DocumentationJson {
                                                             "urgent": false,
                                                             "requestDate": "2029-11-21T20:12:41.326Z",
                                                             "expirationDate": "2030-05-20T20:12:41.326Z",
-                                                            "denialReason": "Request denied. Reason: You already have an active request for the module: EMPLOYEE PORTAL"
+                                                            "denialReason": "Request denied. Reason: You already have an active request for the module: PORTAL DO COLABORADOR"
                                                         }
                                                     ],
                                                     "meta": {
@@ -1558,6 +1558,153 @@ public class DocumentationJson {
                                                     "statusCode": 400,
                                                     "statusMessage": "error",
                                                     "message": "The request is not active."
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                """
+            )
+
+            .append(
+                """
+                # ==============================================================
+                "/${MODULES_BASE_URL}/read-modules": {
+                    "get": {
+                        "summary": "List all available modules",
+                        "description": "This endpoint allows users to list all available modules along with their details. It provides information about the module's name, description, allowed departments, its active status, and any mutually exclusive modules. Authentication is required for access, but credentials do not need to be passed explicitly.",
+                        "tags": ["MODULES"],
+                        "security": [
+                            {
+                                "BearerAuth": []
+                            }
+                        ],
+                        "responses": {
+                            "200": {
+                                "description": "Modules were successfully retrieved.",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "statusCode": {
+                                                    "type": "integer",
+                                                    "example": 200
+                                                },
+                                                "statusMessage": {
+                                                    "type": "string",
+                                                    "example": "success"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Dados recebidos com sucesso."
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "moduleName": {
+                                                                "type": "string",
+                                                                "example": "portal do colaborador"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "acesso básico ao sistema"
+                                                            },
+                                                            "allowedDepartments": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string",
+                                                                    "example": "financeiro"
+                                                                },
+                                                                "example": ["financeiro", "operações", "outros", "rh", "ti"]
+                                                            },
+                                                            "incompatibleModules": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string",
+                                                                    "example": "aprovador financeiro"
+                                                                },
+                                                                "example": ["solicitante financeiro"]
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean",
+                                                                "example": true
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "meta": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "totalItems": {
+                                                            "type": "integer",
+                                                            "example": 10
+                                                        }
+                                                    }
+                                                },
+                                                "links": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "self": {
+                                                            "type": "string",
+                                                            "example": "/api/v1/modules/read-modules/"
+                                                        },
+                                                        "next": {
+                                                            "type": "string",
+                                                            "example": "/api/v1/modules/read-requests"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "examples": {
+                                            "successResponse": {
+                                                "summary": "List of modules",
+                                                "value": {
+                                                    "statusCode": 200,
+                                                    "statusMessage": "success",
+                                                    "message": "Dados recebidos com sucesso.",
+                                                    "data": [
+                                                        {
+                                                            "moduleName": "portal do colaborador",
+                                                            "description": "acesso básico ao sistema",
+                                                            "allowedDepartments": [
+                                                                "financeiro",
+                                                                "operações",
+                                                                "outros",
+                                                                "rh",
+                                                                "ti"
+                                                            ],
+                                                            "incompatibleModules": [],
+                                                            "active": true
+                                                        },
+                                                        {
+                                                            "moduleName": "relatórios gerenciais",
+                                                            "description": "dashboards e relatórios",
+                                                            "allowedDepartments": [
+                                                                "financeiro",
+                                                                "operações",
+                                                                "outros",
+                                                                "rh",
+                                                                "ti"
+                                                            ],
+                                                            "incompatibleModules": [],
+                                                            "active": true
+                                                        }
+                                                    ],
+                                                    "meta": {
+                                                        "totalItems": 10
+                                                    },
+                                                    "links": {
+                                                        "self": "/api/v1/modules/read-modules/",
+                                                        "next": "/api/v1/modules/read-requests"
+                                                    }
                                                 }
                                             }
                                         }

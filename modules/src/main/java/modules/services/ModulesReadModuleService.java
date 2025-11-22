@@ -60,15 +60,6 @@ public class ModulesReadModuleService {
         // Retrieve all modules
         List<ModulesEntity> modulesList = modulesRepository.findAll();
 
-        if (modulesList.isEmpty()) {
-
-            errorHandler.customErrorThrow(
-                404,
-                messageSource.getMessage("response_request_dont_exist", null, locale)
-            );
-
-        }
-
         // List of module responses
         List<ModuleResponseDTO> moduleResponseList = new ArrayList<>();
 
