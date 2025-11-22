@@ -1446,6 +1446,132 @@ public class DocumentationJson {
 
             .append(
                 """
+                # ==============================================================
+                "/MODULES_BASE_URL_REPLACE/cancel-request/{idCancelRequest}": {
+                    "post": {
+                        "summary": "Cancel a module access request",
+                        "description": "This endpoint allows the user to cancel a previously created module access request. The user must provide a valid request ID (UUID format), which must belong to the authenticated user. The request must also be active. The response will indicate the success of the cancellation, including a status message and a link to the canceled request and the next available action.",
+                        "tags": ["MODULES"],
+                        "security": [
+                            {
+                                "BearerAuth": []
+                            }
+                        ],
+                        "parameters": [
+                            {
+                                "name": "idCancelRequest",
+                                "in": "path",
+                                "required": true,
+                                "schema": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "example": "19176499-91de-43e8-9604-ea274b550964"
+                                },
+                                "description": "Unique identifier of the cancellation request. Must be a valid UUID in the format `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`."
+                            }
+                        ],
+                        "responses": {
+                            "200": {
+                                "description": "Cancellation request was successful.",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "statusCode": {
+                                                    "type": "integer",
+                                                    "example": 200
+                                                },
+                                                "statusMessage": {
+                                                    "type": "string",
+                                                    "example": "success"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Your request has been successfully cancelled."
+                                                },
+                                                "links": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "self": {
+                                                            "type": "string",
+                                                            "example": "/api/v1/modules/cancel-request/19176499-91de-43e8-9604-ea274b550964"
+                                                        },
+                                                        "next": {
+                                                            "type": "string",
+                                                            "example": "/api/v1/modules/read-requests"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "examples": {
+                                            "successResponse": {
+                                                "summary": "Successful cancellation",
+                                                "value": {
+                                                    "statusCode": 200,
+                                                    "statusMessage": "success",
+                                                    "message": "Your request has been successfully cancelled.",
+                                                    "links": {
+                                                        "self": "/api/v1/modules/cancel-request/19176499-91de-43e8-9604-ea274b550964",
+                                                        "next": "/api/v1/modules/read-requests"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "400": {
+                                "description": "Bad request due to validation errors or specific conditions not being met.",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "statusCode": {
+                                                    "type": "integer",
+                                                    "example": 400
+                                                },
+                                                "statusMessage": {
+                                                    "type": "string",
+                                                    "example": "error"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "The request is not active."
+                                                }
+                                            }
+                                        },
+                                        "examples": {
+                                            "requestNotFound": {
+                                                "summary": "Request not found",
+                                                "value": {
+                                                    "statusCode": 400,
+                                                    "statusMessage": "error",
+                                                    "message": "Request not found."
+                                                }
+                                            },
+                                            "requestNotActive": {
+                                                "summary": "Request not active",
+                                                "value": {
+                                                    "statusCode": 400,
+                                                    "statusMessage": "error",
+                                                    "message": "The request is not active."
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                """
+            )
+
+            .append(
+                """
                 }}
                 # ==============================================================
                 """
