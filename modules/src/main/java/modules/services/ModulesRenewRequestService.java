@@ -1,12 +1,12 @@
 package modules.services;
 
-import modules.dtos.ModulesCreateRequestDTO;
+import modules.dtos.UUIDValidationDTO;
 import modules.exceptions.ErrorHandler;
-import modules.persistence.entities.ModulesRequestEntity;
 import modules.persistence.entities.ModulesEntity;
-import modules.persistence.repositories.ModulesRequestRepository;
+import modules.persistence.entities.ModulesRequestEntity;
 import modules.persistence.repositories.ModulesAllowedDepartmentsRepository;
 import modules.persistence.repositories.ModulesRepository;
+import modules.persistence.repositories.ModulesRequestRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -16,11 +16,12 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class ModulesCreateRequestService {
+public class ModulesRenewRequestService {
 
     // ==================================================== ( constructor init )
 
@@ -36,7 +37,7 @@ public class ModulesCreateRequestService {
     private final ModulesRepository modulesRepository;
     private final ErrorHandler errorHandler;
 
-    public ModulesCreateRequestService(
+    public ModulesRenewRequestService(
 
         MessageSource messageSource,
         ModulesRequestRepository modulesRequestRepository,
@@ -57,7 +58,7 @@ public class ModulesCreateRequestService {
     public ResponseEntity execute(
 
         Map<String, Object> credentialsData,
-        ModulesCreateRequestDTO modulesCreateRequestDTO
+        UUIDValidationDTO UUIDValidationDTO
 
     ) {
 
@@ -74,81 +75,52 @@ public class ModulesCreateRequestService {
             ZonedDateTime.now(ZoneOffset.UTC).toInstant()
         );
 
-        // Validating Modules (minimum 1, maximum 3)
-        List<String> requestedModules = modulesCreateRequestDTO.modules();
-        if (
-            requestedModules == null ||
-            requestedModules.size() < 1 ||
-            requestedModules.size() > 3
-        ) {
+        // find request
+        UUID idRenewRequest = UUID.fromString(UUIDValidationDTO.id());
 
-            commitRequestStatus(
-                protocolNumber,
-                "negado",
-                messageSource.getMessage(
-                    "response_many_modules_error",
-                    null,
-                    locale
-                ),
-                modulesCreateRequestDTO,
-                idUser.toString()
+        Optional<ModulesRequestEntity> existingRequest = modulesRequestRepository
+            .findByIdAndIdUser(idRenewRequest, idUser.toString());
 
-            );
+        // check request
+        if (existingRequest.isEmpty()) {
 
+            // call custom error
             errorHandler.customErrorThrow(
-                400,
+                404,
                 messageSource.getMessage(
-                    "response_many_modules_error",
-                    null,
-                    locale
+                    "response_request_dont_exist", null, locale
                 )
             );
 
         }
 
-        // Checking if User Already Has Active Request for the Same Modules
-        for (String moduleName : requestedModules) {
+        // request status
+        if (!existingRequest.get().getStatus().equalsIgnoreCase("ativo")) {
 
-            List<ModulesRequestEntity> existingRequests = modulesRequestRepository
-                .findByIdUser(idUser.toString());
-
-            boolean hasActiveRequestForModule = existingRequests.stream()
-                .anyMatch(request -> request
-                    .getModuleNamesRequested()
-                    .contains(
-                        moduleName.toLowerCase()) && "ativo"
-                        .equals(request.getStatus().toLowerCase())
-                    );
-
-            if (hasActiveRequestForModule) {
-
-                commitRequestStatus(
-                    protocolNumber,
-                    "negado",
-                    messageSource.getMessage(
-                        "response_already_requested_error",
-                        null,
-                        locale
-                    ) + " " + moduleName.toUpperCase(),
-                    modulesCreateRequestDTO,
-                    idUser.toString()
-                );
-
-                errorHandler.customErrorThrow(
-                    400,
-                    messageSource.getMessage(
-                        "response_already_requested_error",
-                        null,
-                        locale
-                    ) + " " + moduleName.toUpperCase()
-                );
-
-            }
+            errorHandler.customErrorThrow(
+                400,
+                messageSource.getMessage(
+                    "response_request_not_active", null, locale
+                )
+            );
 
         }
 
+        // expiration time
+        Instant expirationDate = existingRequest.get().getCreatedAt().plus(180, ChronoUnit.DAYS);
+        long daysUntilExpiration = ChronoUnit.DAYS.between(ZonedDateTime.now(), expirationDate);
+
+        if (daysUntilExpiration > 30) {
+            errorHandler.customErrorThrow(
+                400,
+                messageSource.getMessage(
+                    "response_request_too_far_to_renew", null, locale
+                )
+            );
+        }
+
         // Validating if Modules Exist and Are Active
-        List<ModulesEntity> modules = modulesCreateRequestDTO.modules().stream()
+        List<ModulesEntity> modules = existingRequest.get().getModuleNamesRequested().stream()
             .map(moduleName -> {
                 Optional<ModulesEntity> moduleOpt = modulesRepository.findByName(moduleName.toLowerCase());
                 return moduleOpt.filter(module -> module.isActive()).orElse(null);
@@ -156,7 +128,7 @@ public class ModulesCreateRequestService {
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
-        if ( modules.size() != requestedModules.size() ) {
+        if ( modules.size() != existingRequest.get().getModuleNamesRequested().size() ) {
 
             commitRequestStatus(
                 protocolNumber,
@@ -166,7 +138,7 @@ public class ModulesCreateRequestService {
                     null,
                     locale
                 ),
-                modulesCreateRequestDTO,
+                existingRequest.get(),
                 idUser.toString()
             );
 
@@ -182,7 +154,7 @@ public class ModulesCreateRequestService {
         }
 
         // Checking if User Already Has Access to Modules
-        for (String moduleName : requestedModules) {
+        for (String moduleName : existingRequest.get().getModuleNamesRequested()) {
 
             boolean hasAccess = modulesAllowedDepartmentsRepository
                 .existsByModuleNameAndDepartment(
@@ -200,7 +172,7 @@ public class ModulesCreateRequestService {
                         null,
                         locale
                     ) + " " + moduleName.toUpperCase(),
-                    modulesCreateRequestDTO,
+                    existingRequest.get(),
                     idUser.toString()
                 );
 
@@ -223,15 +195,14 @@ public class ModulesCreateRequestService {
             protocolNumber,
             "ativo",
             null,
-            modulesCreateRequestDTO,
+            existingRequest.get(),
             idUser.toString()
-
         );
         // ---------------------------------------------------------------------
 
         // response (links)
         Map<String, String> customLinks = new LinkedHashMap<>();
-        customLinks.put("self", "/" + modulesBaseURL + "/create-request");
+        customLinks.put("self", "/" + modulesBaseURL + "/renew-request/" + UUIDValidationDTO.id() );
 
         // reponse (body)
         StandardResponseService response = new StandardResponseService.Builder()
@@ -255,29 +226,33 @@ public class ModulesCreateRequestService {
 
     // Unified method for both active and denied requests
     private void commitRequestStatus(
+
         String protocolNumber,
         String status,
         String denialReason,
-        ModulesCreateRequestDTO modulesCreateRequestDTO,
+        ModulesRequestEntity existingRequest,
         String idUser
-    ) {
-        ModulesRequestEntity newRequest = new ModulesRequestEntity();
-        newRequest.setId(UUID.randomUUID());
-        newRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        newRequest.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        newRequest.setProtocolNumber(protocolNumber);
-        newRequest.setModuleNamesRequested(
-            modulesCreateRequestDTO.modules().stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toList())
-        );
-        newRequest.setJustification(modulesCreateRequestDTO.justification());
-        newRequest.setUrgent(modulesCreateRequestDTO.urgent());
-        newRequest.setStatus(status);
-        newRequest.setDenialReason(denialReason);
-        newRequest.setIdUser(idUser);
 
-        modulesRequestRepository.save(newRequest);
+    ) {
+
+        ModulesRequestEntity renewRequest = new ModulesRequestEntity();
+        renewRequest.setId(UUID.randomUUID());
+        renewRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
+        renewRequest.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
+        renewRequest.setProtocolNumber(protocolNumber);
+        renewRequest.setModuleNamesRequested(existingRequest.getModuleNamesRequested());
+        renewRequest.setJustification(existingRequest.getJustification());
+        renewRequest.setUrgent(existingRequest.isUrgent());
+        renewRequest.setStatus(status);
+        renewRequest.setDenialReason(denialReason);
+        renewRequest.setIdUser(idUser);
+
+        if (existingRequest.getProtocolNumber() != null) {
+            renewRequest.setLinkedProtocol(existingRequest.getProtocolNumber());
+        }
+
+        modulesRequestRepository.save(renewRequest);
+        
     }
 
 }

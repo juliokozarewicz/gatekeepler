@@ -57,6 +57,7 @@ public class ModulesReadOneRequestService {
         String emailUser = (String) credentialsData.get("email".toLowerCase());
         String departmentUser = (String) credentialsData.get("department".toLowerCase());
 
+        // find request
         UUID parsedUUID = UUID.fromString(UUIDValidationDTO.id());
 
         Optional<ModulesRequestEntity> existingId = modulesRequestRepository
@@ -74,6 +75,7 @@ public class ModulesReadOneRequestService {
 
         }
 
+        // map for response
         Map<String, Object> sanitizedResponse = new LinkedHashMap<>();
         sanitizedResponse.put("id", existingId.get().getId());
         sanitizedResponse.put("createdAt", existingId.get().getCreatedAt());
@@ -89,23 +91,19 @@ public class ModulesReadOneRequestService {
         // Apply conditional field logic based on status
         switch (existingId.get().getStatus()) {
             case "ativo":
-                sanitizedResponse.put(
-                    "linkedProtocol", existingId.get().getLinkedProtocol()
-                );
+                if (existingId.get().getLinkedProtocol() != null) {
+                    sanitizedResponse.put("linkedProtocol", existingId.get().getLinkedProtocol());
+                }
                 sanitizedResponse.remove("denialReason");
                 sanitizedResponse.remove("cancelReason");
                 break;
             case "negado":
-                sanitizedResponse.put(
-                    "denialReason", existingId.get().getDenialReason()
-                );
+                sanitizedResponse.put("denialReason", existingId.get().getDenialReason());
                 sanitizedResponse.remove("linkedProtocol");
                 sanitizedResponse.remove("cancelReason");
                 break;
             case "cancelado":
-                sanitizedResponse.put(
-                    "cancelReason", existingId.get().getCancelReason()
-                );
+                sanitizedResponse.put("cancelReason", existingId.get().getCancelReason());
                 sanitizedResponse.remove("denialReason");
                 sanitizedResponse.remove("linkedProtocol");
                 break;
@@ -120,7 +118,7 @@ public class ModulesReadOneRequestService {
         Map<String, String> customLinks = new LinkedHashMap<>();
         customLinks.put("self", "/" + modulesBaseURL + "/read-one-request/" + UUIDValidationDTO.id());
 
-        // response
+        // reponse (body)
         StandardResponseService response = new StandardResponseService.Builder()
             .statusCode(200)
             .statusMessage("success")
