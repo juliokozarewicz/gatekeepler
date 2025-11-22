@@ -3,10 +3,8 @@ package modules.persistence.specifications;
 import jakarta.persistence.criteria.Predicate;
 import modules.persistence.entities.ModulesRequestEntity;
 import org.springframework.data.jpa.domain.Specification;
-import java.math.BigDecimal;
-import java.time.Instant;
+
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 

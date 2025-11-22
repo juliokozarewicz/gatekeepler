@@ -12,4 +12,5 @@ public interface ModulesAllowedDepartmentsRepository
     List<ModulesAllowedDepartmentsEntity> findByModuleName(String moduleName);
 
     boolean existsByModuleNameAndDepartment(String moduleName, String department);
+
 }

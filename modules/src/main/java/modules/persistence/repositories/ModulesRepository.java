@@ -18,4 +18,5 @@ public interface ModulesRepository extends JpaRepository<ModulesEntity, UUID> {
     List<ModulesEntity> findByActiveTrue();
 
     Optional<ModulesEntity> findById(UUID id);
+
 }
