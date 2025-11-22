@@ -235,6 +235,7 @@ public class ModulesCreateRequestService {
         // response (links)
         Map<String, String> customLinks = new LinkedHashMap<>();
         customLinks.put("self", "/" + modulesBaseURL + "/create-request");
+        customLinks.put("next", "/" + modulesBaseURL + "/read-requests");
 
         // reponse (body)
         StandardResponseService response = new StandardResponseService.Builder()

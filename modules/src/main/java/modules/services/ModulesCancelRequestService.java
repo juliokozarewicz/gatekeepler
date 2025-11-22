@@ -1,5 +1,6 @@
 package modules.services;
 
+import modules.dtos.ModulesCancelRequestDTO;
 import modules.dtos.UUIDValidationDTO;
 import modules.exceptions.ErrorHandler;
 import modules.persistence.entities.ModulesRequestEntity;
@@ -10,11 +11,13 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
-public class ModulesReadOneRequestService {
+public class ModulesCancelRequestService {
 
     // ==================================================== ( constructor init )
 
@@ -28,7 +31,7 @@ public class ModulesReadOneRequestService {
     private final ErrorHandler errorHandler;
     private final ModulesRequestRepository modulesRequestRepository;
 
-    public ModulesReadOneRequestService(
+    public ModulesCancelRequestService(
 
         MessageSource messageSource,
         ModulesRequestRepository modulesRequestRepository,
@@ -45,7 +48,8 @@ public class ModulesReadOneRequestService {
     public ResponseEntity execute(
 
         Map<String, Object> credentialsData,
-        UUIDValidationDTO UUIDValidationDTO
+        UUIDValidationDTO UUIDValidationDTO,
+        ModulesCancelRequestDTO modulesCancelRequestDTO
 
     ) {
 
@@ -60,10 +64,11 @@ public class ModulesReadOneRequestService {
         // find request
         UUID parsedUUID = UUID.fromString(UUIDValidationDTO.id());
 
-        Optional<ModulesRequestEntity> existingId = modulesRequestRepository
+        Optional<ModulesRequestEntity> existingRequest = modulesRequestRepository
             .findByIdAndIdUser(parsedUUID, idUser.toString());
 
-        if (existingId.isEmpty()) {
+        // check request
+        if (existingRequest.isEmpty()) {
 
             // call custom error
             errorHandler.customErrorThrow(
@@ -75,48 +80,30 @@ public class ModulesReadOneRequestService {
 
         }
 
-        // map for response
-        Map<String, Object> sanitizedResponse = new LinkedHashMap<>();
-        sanitizedResponse.put("id", existingId.get().getId());
-        sanitizedResponse.put("createdAt", existingId.get().getCreatedAt());
-        sanitizedResponse.put("updatedAt", existingId.get().getUpdatedAt());
-        sanitizedResponse.put("expirationDate", existingId.get().getCreatedAt().plus(180, ChronoUnit.DAYS));
-        sanitizedResponse.put("protocolNumber", existingId.get().getProtocolNumber());
-        sanitizedResponse.put("moduleNamesRequested", existingId.get().getModuleNamesRequested());
-        sanitizedResponse.put("justification", existingId.get().getJustification());
-        sanitizedResponse.put("urgent", existingId.get().isUrgent());
-        sanitizedResponse.put("status", existingId.get().getStatus());
-        sanitizedResponse.put("denialReason", existingId.get().getDenialReason());
+        // request status
+        if (!existingRequest.get().getStatus().equalsIgnoreCase("ativo")) {
 
-        // Apply conditional field logic based on status
-        switch (existingId.get().getStatus()) {
-            case "ativo":
-                if (existingId.get().getLinkedProtocol() != null) {
-                    sanitizedResponse.put("linkedProtocol", existingId.get().getLinkedProtocol());
-                }
-                sanitizedResponse.remove("denialReason");
-                sanitizedResponse.remove("cancelReason");
-                break;
-            case "negado":
-                sanitizedResponse.put("denialReason", existingId.get().getDenialReason());
-                sanitizedResponse.remove("linkedProtocol");
-                sanitizedResponse.remove("cancelReason");
-                break;
-            case "cancelado":
-                sanitizedResponse.put("cancelReason", existingId.get().getCancelReason());
-                sanitizedResponse.remove("denialReason");
-                sanitizedResponse.remove("linkedProtocol");
-                break;
-            default:
-                sanitizedResponse.remove("linkedProtocol");
-                sanitizedResponse.remove("denialReason");
-                sanitizedResponse.remove("cancelReason");
-                break;
+            errorHandler.customErrorThrow(
+                400,
+                messageSource.getMessage(
+                    "response_request_not_active", null, locale
+                )
+            );
+
         }
+
+        // Cancel request
+        ModulesRequestEntity requestEntity = existingRequest.get();
+        requestEntity.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
+        requestEntity.setStatus("cancelado");
+        requestEntity.setCancelReason(modulesCancelRequestDTO.justification());
+
+        // Save the updated request entity
+        modulesRequestRepository.save(requestEntity);
 
         // response (links)
         Map<String, String> customLinks = new LinkedHashMap<>();
-        customLinks.put("self", "/" + modulesBaseURL + "/read-one-request/" + UUIDValidationDTO.id());
+        customLinks.put("self", "/" + modulesBaseURL + "/cancel-request/" + UUIDValidationDTO.id());
         customLinks.put("next", "/" + modulesBaseURL + "/read-requests");
 
         // reponse (body)
@@ -125,12 +112,11 @@ public class ModulesReadOneRequestService {
             .statusMessage("success")
             .message(
                 messageSource.getMessage(
-                    "response_get_data_success",
+                    "response_request_cancel_success",
                     null,
                     locale
                 )
             )
-            .data(sanitizedResponse)
             .links(customLinks)
             .build();
 

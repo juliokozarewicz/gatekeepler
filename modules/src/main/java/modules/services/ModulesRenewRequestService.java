@@ -206,6 +206,7 @@ public class ModulesRenewRequestService {
         // response (links)
         Map<String, String> customLinks = new LinkedHashMap<>();
         customLinks.put("self", "/" + modulesBaseURL + "/renew-request/" + UUIDValidationDTO.id() );
+        customLinks.put("next", "/" + modulesBaseURL + "/read-requests");
 
         // reponse (body)
         StandardResponseService response = new StandardResponseService.Builder()
