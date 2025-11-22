@@ -30,6 +30,12 @@ services:
       - postgres_data:/var/lib/postgresql
     networks:
       - spring_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   accounts_redis:
     container_name: accounts_redis
@@ -49,6 +55,12 @@ services:
       - "6379:6379"
     networks:
       - spring_net
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${ACCOUNTS_REDIS_PASSWORD} PING | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   documentation:
     container_name: documentation
@@ -59,6 +71,12 @@ services:
       - "${DOCUMENTATION_PORT}:${DOCUMENTATION_PORT}"
     networks:
       - spring_net
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${DOCUMENTATION_PORT}/actuator/health" ]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
 
   helloworld:
     container_name: helloworld
@@ -69,6 +87,12 @@ services:
       - "${HELLOWORLD_PORT}:${HELLOWORLD_PORT}"
     networks:
       - spring_net
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${HELLOWORLD_PORT}/actuator/health" ]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
 
   accounts:
     container_name: accounts
@@ -82,6 +106,12 @@ services:
     depends_on:
       - database
       - accounts_redis
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${ACCOUNTS_PORT}/actuator/health" ]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
 
   modules:
     build: ../modules
@@ -95,6 +125,12 @@ services:
       - accounts
     deploy:
       replicas: 3
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${MODULES_PORT}/actuator/health" ]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
 
 volumes:
   postgres_data:

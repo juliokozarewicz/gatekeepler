@@ -4,8 +4,8 @@ COPY pom.xml .
 RUN mvn -B dependency:resolve dependency:resolve-plugins
 COPY src ./src
 RUN mvn -B clean package -DskipTests
-
 FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
+RUN apk update && apk add --no-cache curl jq
 COPY --from=build /app/target/*.jar /app/application.jar
 ENTRYPOINT ["java", "-jar", "application.jar"]

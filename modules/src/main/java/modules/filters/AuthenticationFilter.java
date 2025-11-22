@@ -68,6 +68,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private void init() {
 
         publicPaths = Arrays.asList(
+            "/actuator/health",
             "/" + modulesBaseURL + "/static/public/**"
         );
 

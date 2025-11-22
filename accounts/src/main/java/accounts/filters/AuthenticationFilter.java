@@ -68,6 +68,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private void init() {
 
         publicPaths = Arrays.asList(
+            "/actuator/health",
             "/" + accountsBaseURL + "/static/public/**",
             "/" + accountsBaseURL + "/signup",
             "/" + accountsBaseURL + "/activate-account",
