@@ -29,6 +29,7 @@ http {
     map $http_user_agent $bad_ua {
         default 0;
         "~*(curl|wget|python-requests|masscan|nmap|nikto|sqlmap|bot|scraper)" 1;
+        "~*Docker-Healthcheck" 0;
     }
 
     # Special log for DDOS attacks or limits reached
@@ -63,6 +64,15 @@ http {
 
         listen 80;
         server_name $MAIN_DOMAIN www.$MAIN_DOMAIN;
+
+        location /nginx-status {
+            stub_status on;
+            access_log off;
+            allow 127.0.0.1;
+            allow 172.18.0.0/16;
+            deny all;
+            break;
+        }
 
         # **CONFIGURAÇÕES DE TIMEOUT ADICIONADAS/AUMENTADAS**
         proxy_connect_timeout 30s;

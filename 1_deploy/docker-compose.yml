@@ -14,6 +14,12 @@ services:
       - modules
       - accounts
       - documentation
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "-A", "Docker-Healthcheck", "http://localhost/nginx-status" ]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
 
   database:
     container_name: database
