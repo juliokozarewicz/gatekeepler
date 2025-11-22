@@ -36,7 +36,9 @@ CREATE TABLE IF NOT EXISTS modules.module_requests (
     justification VARCHAR(500) NOT NULL,
     urgent BOOLEAN NOT NULL,
     status VARCHAR(50) NOT NULL,
+    linked_protocol VARCHAR(255),
     denial_reason VARCHAR(500),
+    cancel_reason VARCHAR(200),
     id_user VARCHAR(255) NOT NULL
 );
 

@@ -86,6 +86,36 @@ public class ModulesReadOneRequestService {
         sanitizedResponse.put("status", existingId.get().getStatus());
         sanitizedResponse.put("denialReason", existingId.get().getDenialReason());
 
+        // Apply conditional field logic based on status
+        switch (existingId.get().getStatus()) {
+            case "ativo":
+                sanitizedResponse.put(
+                    "linkedProtocol", existingId.get().getLinkedProtocol()
+                );
+                sanitizedResponse.remove("denialReason");
+                sanitizedResponse.remove("cancelReason");
+                break;
+            case "negado":
+                sanitizedResponse.put(
+                    "denialReason", existingId.get().getDenialReason()
+                );
+                sanitizedResponse.remove("linkedProtocol");
+                sanitizedResponse.remove("cancelReason");
+                break;
+            case "cancelado":
+                sanitizedResponse.put(
+                    "cancelReason", existingId.get().getCancelReason()
+                );
+                sanitizedResponse.remove("denialReason");
+                sanitizedResponse.remove("linkedProtocol");
+                break;
+            default:
+                sanitizedResponse.remove("linkedProtocol");
+                sanitizedResponse.remove("denialReason");
+                sanitizedResponse.remove("cancelReason");
+                break;
+        }
+
         // response (links)
         Map<String, String> customLinks = new LinkedHashMap<>();
         customLinks.put("self", "/" + modulesBaseURL + "/read-one-request/" + UUIDValidationDTO.id());

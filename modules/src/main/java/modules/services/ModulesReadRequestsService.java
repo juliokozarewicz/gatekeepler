@@ -104,7 +104,36 @@ public class ModulesReadRequestsService {
                 map.put("urgent", req.isUrgent());
                 map.put("requestDate", req.getCreatedAt());
                 map.put("expirationDate", req.getCreatedAt().plus(180, ChronoUnit.DAYS));
-                map.put("denialReason", req.getDenialReason());
+
+                // Use ternary operators to decide which fields to include
+                if ("ativo".equals(req.getStatus())) {
+                    map.put("linkedProtocol", req.getLinkedProtocol() != null ? req.getLinkedProtocol() : null);
+                    map.remove("denialReason");
+                    map.remove("cancelReason");
+                }
+
+                // "negado" - only show denialReason, remove cancelReason and linkedProtocol
+                else if ("negado".equals(req.getStatus())) {
+                    map.put("denialReason", req.getDenialReason() != null ? req.getDenialReason() : null);
+                    map.remove("linkedProtocol");
+                    map.remove("cancelReason");
+                }
+
+                // "cancelado" - only show cancelReason, remove denialReason and linkedProtocol
+                else if ("cancelado".equals(req.getStatus())) {
+
+                    map.put("cancelReason", req.getCancelReason() != null ? req.getCancelReason() : null);
+                    map.remove("denialReason");
+                    map.remove("linkedProtocol");
+
+                } else {
+
+                    // For any other status, remove all extra fields
+                    map.remove("denialReason");
+                    map.remove("cancelReason");
+                    map.remove("linkedProtocol");
+
+                }
 
                 return map;
             })

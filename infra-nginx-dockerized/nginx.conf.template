@@ -304,6 +304,12 @@ http {
             proxy_pass http://modules_backend;
             limit_req zone=general_zone burst=5 nodelay;
         }
+
+        # [ MODULES - Renew One Request ]
+        location ~ /api/v1/modules/renew-request/([0-9a-zA-Z-]+)$ {
+            proxy_pass http://modules_backend;
+            limit_req zone=general_zone burst=5 nodelay;
+        }
         # ------------------------------------------------------------- (end modules)
 
     }

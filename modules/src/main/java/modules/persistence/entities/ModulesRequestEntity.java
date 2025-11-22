@@ -47,8 +47,14 @@ public class ModulesRequestEntity {
     @Column(nullable = false)
     private String status;
 
+    @Column(nullable = true, length = 255)
+    private String linkedProtocol;
+
     @Column(nullable = true, length = 500)
     private String denialReason;
+
+    @Column(nullable = true, length = 200)
+    private String cancelReason;
 
     @Column(updatable = false, nullable = false)
     private String idUser;
