@@ -1301,6 +1301,151 @@ public class DocumentationJson {
 
             .append(
                 """
+                # ==============================================================
+                "/MODULES_BASE_URL_REPLACE/renew-request/{idRenewRequest}": {
+                    "post": {
+                        "summary": "Renew a module access request",
+                        "description": "This endpoint allows the user to renew a previously created module access request. The user must provide a valid request ID (UUID format), which must belong to the authenticated user. The request must also be active and within a certain expiration window for renewal. The response will include the new protocol number and a status message.",
+                        "tags": ["MODULES"],
+                        "security": [
+                            {
+                                "BearerAuth": []
+                            }
+                        ],
+                        "parameters": [
+                            {
+                                "name": "idRenewRequest",
+                                "in": "path",
+                                "required": true,
+                                "schema": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "example": "def04c2a-22e4-4e44-8831-386a9273a2ff"
+                                },
+                                "description": "Unique identifier of the request. Must be a valid UUID in the format `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`."
+                            }
+                        ],
+                        "responses": {
+                            "201": {
+                                "description": "Renewal request was successful.",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "statusCode": {
+                                                    "type": "integer",
+                                                    "example": 201
+                                                },
+                                                "statusMessage": {
+                                                    "type": "string",
+                                                    "example": "success"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Your renewal was successful. Your new protocol is: SOL-20251122-AEFC"
+                                                },
+                                                "links": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "self": {
+                                                            "type": "string",
+                                                            "example": "/api/v1/modules/renew-request/def04c2a-22e4-4e44-8831-386a9273a2ff"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "examples": {
+                                            "successResponse": {
+                                                "summary": "Successful renewal",
+                                                "value": {
+                                                    "statusCode": 201,
+                                                    "statusMessage": "success",
+                                                    "message": "Your renewal was successful. Your new protocol is: SOL-20251122-AEFC",
+                                                    "links": {
+                                                        "self": "/api/v1/modules/renew-request/def04c2a-22e4-4e44-8831-386a9273a2ff"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "400": {
+                                "description": "Bad request due to validation errors or specific conditions not being met.",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "statusCode": {
+                                                    "type": "integer",
+                                                    "example": 400
+                                                },
+                                                "statusMessage": {
+                                                    "type": "string",
+                                                    "example": "error"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Request not found."
+                                                }
+                                            }
+                                        },
+                                        "examples": {
+                                            "requestNotFound": {
+                                                "summary": "Request not found",
+                                                "value": {
+                                                    "statusCode": 400,
+                                                    "statusMessage": "error",
+                                                    "message": "Request not found."
+                                                }
+                                            },
+                                            "requestNotActive": {
+                                                "summary": "Request not active",
+                                                "value": {
+                                                    "statusCode": 400,
+                                                    "statusMessage": "error",
+                                                    "message": "The request is not active."
+                                                }
+                                            },
+                                            "requestTooFarToRenew": {
+                                                "summary": "Request too far to renew",
+                                                "value": {
+                                                    "statusCode": 400,
+                                                    "statusMessage": "error",
+                                                    "message": "This request cannot be renewed yet."
+                                                }
+                                            },
+                                            "modulesDontExist": {
+                                                "summary": "Modules do not exist or are not active",
+                                                "value": {
+                                                    "statusCode": 400,
+                                                    "statusMessage": "error",
+                                                    "message": "One or more of the requested modules do not exist or are not active."
+                                                }
+                                            },
+                                            "moduleNotAllowed": {
+                                                "summary": "Module not allowed for the department",
+                                                "value": {
+                                                    "statusCode": 400,
+                                                    "statusMessage": "error",
+                                                    "message": "Request denied. You do not have access to the module: AUDITORIA"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                """
+            )
+
+            .append(
+                """
                 }}
                 # ==============================================================
                 """
