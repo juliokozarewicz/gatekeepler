@@ -13,7 +13,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -36,6 +35,7 @@ public class ModulesRenewRequestService {
     private final ModulesAllowedDepartmentsRepository modulesAllowedDepartmentsRepository;
     private final ModulesRepository modulesRepository;
     private final ErrorHandler errorHandler;
+    private final ModulesUtilsService modulesUtilsService;
 
     public ModulesRenewRequestService(
 
@@ -43,7 +43,8 @@ public class ModulesRenewRequestService {
         ModulesRequestRepository modulesRequestRepository,
         ModulesAllowedDepartmentsRepository modulesAllowedDepartmentsRepository,
         ModulesRepository modulesRepository,
-        ErrorHandler errorHandler
+        ErrorHandler errorHandler,
+        ModulesUtilsService modulesUtilsService
 
     ) {
         this.messageSource = messageSource;
@@ -51,6 +52,7 @@ public class ModulesRenewRequestService {
         this.modulesAllowedDepartmentsRepository = modulesAllowedDepartmentsRepository;
         this.modulesRepository = modulesRepository;
         this.errorHandler = errorHandler;
+        this.modulesUtilsService = modulesUtilsService;
     }
 
     // ===================================================== ( constructor end )
@@ -107,7 +109,8 @@ public class ModulesRenewRequestService {
         }
 
         // expiration time
-        Instant expirationDate = existingRequest.get().getCreatedAt().plus(180, ChronoUnit.DAYS);
+        ZonedDateTime createdAt = ZonedDateTime.ofInstant(existingRequest.get().getCreatedAt(), ZoneOffset.UTC);
+        ZonedDateTime expirationDate = createdAt.plus(180, ChronoUnit.DAYS);
         long daysUntilExpiration = ChronoUnit.DAYS.between(ZonedDateTime.now(), expirationDate);
 
         if (daysUntilExpiration > 30) {
@@ -130,7 +133,7 @@ public class ModulesRenewRequestService {
 
         if ( modules.size() != existingRequest.get().getModuleNamesRequested().size() ) {
 
-            commitRequestStatus(
+            modulesUtilsService.renewRequestStatus(
                 protocolNumber,
                 "negado",
                 messageSource.getMessage(
@@ -164,7 +167,7 @@ public class ModulesRenewRequestService {
 
             if (!hasAccess) {
 
-                commitRequestStatus(
+                modulesUtilsService.renewRequestStatus(
                     protocolNumber,
                     "negado",
                     messageSource.getMessage(
@@ -191,7 +194,7 @@ public class ModulesRenewRequestService {
 
         // Commit DB
         // ---------------------------------------------------------------------
-        commitRequestStatus(
+        modulesUtilsService.renewRequestStatus(
             protocolNumber,
             "ativo",
             null,
@@ -210,7 +213,7 @@ public class ModulesRenewRequestService {
             .statusMessage("success")
             .message(
                 messageSource.getMessage(
-                    "response_request_aproved",
+                    "response_renew_success",
                     null,
                     locale
                 ) + " " + protocolNumber
@@ -222,37 +225,6 @@ public class ModulesRenewRequestService {
             .status(response.getStatusCode())
             .body(response);
 
-    }
-
-    // Unified method for both active and denied requests
-    private void commitRequestStatus(
-
-        String protocolNumber,
-        String status,
-        String denialReason,
-        ModulesRequestEntity existingRequest,
-        String idUser
-
-    ) {
-
-        ModulesRequestEntity renewRequest = new ModulesRequestEntity();
-        renewRequest.setId(UUID.randomUUID());
-        renewRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        renewRequest.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        renewRequest.setProtocolNumber(protocolNumber);
-        renewRequest.setModuleNamesRequested(existingRequest.getModuleNamesRequested());
-        renewRequest.setJustification(existingRequest.getJustification());
-        renewRequest.setUrgent(existingRequest.isUrgent());
-        renewRequest.setStatus(status);
-        renewRequest.setDenialReason(denialReason);
-        renewRequest.setIdUser(idUser);
-
-        if (existingRequest.getProtocolNumber() != null) {
-            renewRequest.setLinkedProtocol(existingRequest.getProtocolNumber());
-        }
-
-        modulesRequestRepository.save(renewRequest);
-        
     }
 
 }

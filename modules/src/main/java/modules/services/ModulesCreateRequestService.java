@@ -35,6 +35,7 @@ public class ModulesCreateRequestService {
     private final ModulesAllowedDepartmentsRepository modulesAllowedDepartmentsRepository;
     private final ModulesRepository modulesRepository;
     private final ErrorHandler errorHandler;
+    private final ModulesUtilsService modulesUtilsService;
 
     public ModulesCreateRequestService(
 
@@ -42,7 +43,8 @@ public class ModulesCreateRequestService {
         ModulesRequestRepository modulesRequestRepository,
         ModulesAllowedDepartmentsRepository modulesAllowedDepartmentsRepository,
         ModulesRepository modulesRepository,
-        ErrorHandler errorHandler
+        ErrorHandler errorHandler,
+        ModulesUtilsService modulesUtilsService
 
     ) {
         this.messageSource = messageSource;
@@ -50,6 +52,7 @@ public class ModulesCreateRequestService {
         this.modulesAllowedDepartmentsRepository = modulesAllowedDepartmentsRepository;
         this.modulesRepository = modulesRepository;
         this.errorHandler = errorHandler;
+        this.modulesUtilsService = modulesUtilsService;
     }
 
     // ===================================================== ( constructor end )
@@ -82,7 +85,7 @@ public class ModulesCreateRequestService {
             requestedModules.size() > 3
         ) {
 
-            commitRequestStatus(
+            modulesUtilsService.createCommitRequestStatus(
                 protocolNumber,
                 "negado",
                 messageSource.getMessage(
@@ -122,7 +125,7 @@ public class ModulesCreateRequestService {
 
             if (hasActiveRequestForModule) {
 
-                commitRequestStatus(
+                modulesUtilsService.createCommitRequestStatus(
                     protocolNumber,
                     "negado",
                     messageSource.getMessage(
@@ -158,7 +161,7 @@ public class ModulesCreateRequestService {
 
         if ( modules.size() != requestedModules.size() ) {
 
-            commitRequestStatus(
+            modulesUtilsService.createCommitRequestStatus(
                 protocolNumber,
                 "negado",
                 messageSource.getMessage(
@@ -192,7 +195,7 @@ public class ModulesCreateRequestService {
 
             if (!hasAccess) {
 
-                commitRequestStatus(
+                modulesUtilsService.createCommitRequestStatus(
                     protocolNumber,
                     "negado",
                     messageSource.getMessage(
@@ -219,7 +222,7 @@ public class ModulesCreateRequestService {
 
         // Commit DB
         // ---------------------------------------------------------------------
-        commitRequestStatus(
+        modulesUtilsService.createCommitRequestStatus(
             protocolNumber,
             "ativo",
             null,
@@ -251,33 +254,6 @@ public class ModulesCreateRequestService {
             .status(response.getStatusCode())
             .body(response);
 
-    }
-
-    // Unified method for both active and denied requests
-    private void commitRequestStatus(
-        String protocolNumber,
-        String status,
-        String denialReason,
-        ModulesCreateRequestDTO modulesCreateRequestDTO,
-        String idUser
-    ) {
-        ModulesRequestEntity newRequest = new ModulesRequestEntity();
-        newRequest.setId(UUID.randomUUID());
-        newRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        newRequest.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        newRequest.setProtocolNumber(protocolNumber);
-        newRequest.setModuleNamesRequested(
-            modulesCreateRequestDTO.modules().stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toList())
-        );
-        newRequest.setJustification(modulesCreateRequestDTO.justification());
-        newRequest.setUrgent(modulesCreateRequestDTO.urgent());
-        newRequest.setStatus(status);
-        newRequest.setDenialReason(denialReason);
-        newRequest.setIdUser(idUser);
-
-        modulesRequestRepository.save(newRequest);
     }
 
 }
