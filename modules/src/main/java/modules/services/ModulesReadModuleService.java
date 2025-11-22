@@ -104,7 +104,7 @@ public class ModulesReadModuleService {
 
         // Response (links)
         Map<String, String> customLinks = new LinkedHashMap<>();
-        customLinks.put("self", "/" + modulesBaseURL + "/read-modules/");
+        customLinks.put("self", "/" + modulesBaseURL + "/read-modules");
         customLinks.put("next", "/" + modulesBaseURL + "/read-requests");
 
         // Meta
