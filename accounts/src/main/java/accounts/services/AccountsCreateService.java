@@ -141,7 +141,6 @@ public class AccountsCreateService {
         // Links
         Map<String, String> customLinks = new LinkedHashMap<>();
         customLinks.put("self", "/" + accountsBaseURL + "/signup");
-        customLinks.put("next", "/" + accountsBaseURL + "/activate-email");
 
         StandardResponseService response = new StandardResponseService.Builder()
             .statusCode(201)

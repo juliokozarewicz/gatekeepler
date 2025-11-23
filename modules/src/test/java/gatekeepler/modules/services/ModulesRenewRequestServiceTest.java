@@ -20,15 +20,14 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
+
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ModulesRenewRequestServiceTest {
@@ -113,149 +112,127 @@ class ModulesRenewRequestServiceTest {
         when(modulesRepository.findByName(eq(MODULE_A))).thenReturn(Optional.of(moduleAEntity));
         when(modulesRepository.findByName(eq(MODULE_B))).thenReturn(Optional.of(moduleBEntity));
 
-        when(modulesAllowedDepartmentsRepository.existsByModuleNameAndDepartment(eq(MODULE_A), eq("ti")))
-            .thenReturn(true);
-        when(modulesAllowedDepartmentsRepository.existsByModuleNameAndDepartment(eq(MODULE_B), eq("ti")))
-            .thenReturn(true);
+        when(modulesAllowedDepartmentsRepository.existsByModuleNameAndDepartment(eq(MODULE_A), eq("ti"))).thenReturn(true);
+        when(modulesAllowedDepartmentsRepository.existsByModuleNameAndDepartment(eq(MODULE_B), eq("ti"))).thenReturn(true);
 
         doNothing().when(modulesUtilsService).renewRequestStatus(
             protocolCaptor.capture(),
             eq("ativo"),
             eq(null),
-            eq(activeRequestEntity),
+            argThat(entity -> entity.getId().equals(requestId)),
             eq(userId.toString())
         );
 
         ResponseEntity response = service.execute(credentials, uuidValidationDTO);
-
         String capturedProtocol = protocolCaptor.getValue();
 
-        assertEquals(201, response.getStatusCode().value());
-        assertNotNull(response.getBody());
         StandardResponseService responseBody = (StandardResponseService) response.getBody();
 
-        String expectedMessage = "Renovação realizada com sucesso. Protocolo: " + capturedProtocol;
-        assertEquals(expectedMessage, responseBody.getMessage());
+        assertEquals(201, response.getStatusCode().value());
+        assertNotNull(responseBody);
+        assertEquals("Renovação realizada com sucesso. Protocolo: " + capturedProtocol, responseBody.getMessage());
         assertEquals(2, responseBody.getLinks().size());
 
-        verify(modulesRequestRepository, times(1))
-            .findByIdAndIdUser(eq(requestId), eq(userId.toString()));
+        verify(modulesRequestRepository, times(1)).findByIdAndIdUser(eq(requestId), eq(userId.toString()));
         verify(modulesRepository, times(1)).findByName(eq(MODULE_A));
         verify(modulesRepository, times(1)).findByName(eq(MODULE_B));
-        verify(modulesAllowedDepartmentsRepository, times(1))
-            .existsByModuleNameAndDepartment(eq(MODULE_A), eq("ti"));
-        verify(modulesAllowedDepartmentsRepository, times(1))
-            .existsByModuleNameAndDepartment(eq(MODULE_B), eq("ti"));
-
+        verify(modulesAllowedDepartmentsRepository, times(1)).existsByModuleNameAndDepartment(eq(MODULE_A), eq("ti"));
+        verify(modulesAllowedDepartmentsRepository, times(1)).existsByModuleNameAndDepartment(eq(MODULE_B), eq("ti"));
         verify(modulesUtilsService, times(1)).renewRequestStatus(
-            eq(capturedProtocol),
-            eq("ativo"),
-            eq(null),
-            eq(activeRequestEntity),
+            eq(capturedProtocol), eq("ativo"), eq(null),
+            argThat(entity -> entity.getId().equals(requestId)),
             eq(userId.toString())
         );
-
-        verify(errorHandler, never()).customErrorThrow(anyInt(), anyString());
+        verify(errorHandler, never()).customErrorThrow(eq(400), eq("QUALQUER MOTIVO"));
     }
 
     @Test
     void testExecute_RequestNotFound_ShouldThrowError404() {
-
-        when(modulesRequestRepository.findByIdAndIdUser(eq(requestId), eq(userId.toString())))
-            .thenReturn(Optional.empty());
+        when(modulesRequestRepository.findByIdAndIdUser(eq(requestId), eq(userId.toString()))).thenReturn(Optional.empty());
 
         final String expectedErrorMessage = "Requisição não encontrada";
-
         doThrow(new RuntimeException(expectedErrorMessage))
             .when(errorHandler)
             .customErrorThrow(eq(404), eq(expectedErrorMessage));
 
-        assertThrows(RuntimeException.class, () ->
-            service.execute(credentials, uuidValidationDTO)
-        );
+        assertThrows(RuntimeException.class, () -> service.execute(credentials, uuidValidationDTO));
 
-        verify(modulesRequestRepository, times(1))
-            .findByIdAndIdUser(eq(requestId), eq(userId.toString()));
-        verify(errorHandler, times(1))
-            .customErrorThrow(eq(404), eq(expectedErrorMessage));
-        verify(modulesUtilsService, never()).renewRequestStatus(eq("QUALQUER PROTOCOLO"), eq("negado"), eq("QUALQUER MOTIVO"), any(ModulesRequestEntity.class), eq("QUALQUER USER ID"));
+        verify(modulesRequestRepository, times(1)).findByIdAndIdUser(eq(requestId), eq(userId.toString()));
+        verify(errorHandler, times(1)).customErrorThrow(eq(404), eq(expectedErrorMessage));
+        verify(modulesUtilsService, never()).renewRequestStatus(
+            eq("QUALQUER PROTOCOLO"),
+            eq("negado"),
+            eq("QUALQUER MOTIVO"),
+            argThat(entity -> entity.getId().equals(requestId)),
+            eq(userId.toString())
+        );
     }
 
     @Test
     void testExecute_RequestNotActive_ShouldThrowError400() {
-
         ModulesRequestEntity deniedRequest = new ModulesRequestEntity();
         deniedRequest.setStatus("negado");
-
-        Instant closeDate = ZonedDateTime.now(ZoneOffset.UTC).minus(10, ChronoUnit.DAYS).toInstant();
-        deniedRequest.setCreatedAt(closeDate);
+        deniedRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).minus(10, ChronoUnit.DAYS).toInstant());
         deniedRequest.setModuleNamesRequested(List.of(MODULE_A));
 
-        when(modulesRequestRepository.findByIdAndIdUser(eq(requestId), eq(userId.toString())))
-            .thenReturn(Optional.of(deniedRequest));
+        when(modulesRequestRepository.findByIdAndIdUser(eq(requestId), eq(userId.toString()))).thenReturn(Optional.of(deniedRequest));
 
         final String expectedErrorMessage = "Requisição não está ativa";
-
         doThrow(new RuntimeException(expectedErrorMessage))
             .when(errorHandler)
             .customErrorThrow(eq(400), eq(expectedErrorMessage));
 
-        assertThrows(RuntimeException.class, () ->
-            service.execute(credentials, uuidValidationDTO)
-        );
+        assertThrows(RuntimeException.class, () -> service.execute(credentials, uuidValidationDTO));
 
-        verify(modulesRequestRepository, times(1))
-            .findByIdAndIdUser(eq(requestId), eq(userId.toString()));
-        verify(errorHandler, times(1))
-            .customErrorThrow(eq(400), eq(expectedErrorMessage));
-        verify(modulesUtilsService, never()).renewRequestStatus(eq("QUALQUER PROTOCOLO"), eq("negado"), eq("QUALQUER MOTIVO"), any(ModulesRequestEntity.class), eq("QUALQUER USER ID"));
+        verify(modulesRequestRepository, times(1)).findByIdAndIdUser(eq(requestId), eq(userId.toString()));
+        verify(errorHandler, times(1)).customErrorThrow(eq(400), eq(expectedErrorMessage));
+        verify(modulesUtilsService, never()).renewRequestStatus(
+            eq("QUALQUER PROTOCOLO"),
+            eq("negado"),
+            eq("QUALQUER MOTIVO"),
+            argThat(entity -> entity.getId().equals(requestId)),
+            eq(userId.toString())
+        );
     }
 
     @Test
     void testExecute_RequestTooFarToRenew_ShouldThrowError400() {
-
         ModulesRequestEntity farRequest = new ModulesRequestEntity();
         farRequest.setStatus("ativo");
-        Instant farDate = ZonedDateTime.now(ZoneOffset.UTC)
-            .minus(10, ChronoUnit.DAYS)
-            .toInstant();
-        farRequest.setCreatedAt(farDate);
+        farRequest.setCreatedAt(ZonedDateTime.now(ZoneOffset.UTC).minus(10, ChronoUnit.DAYS).toInstant());
         farRequest.setModuleNamesRequested(List.of(MODULE_A));
 
-        when(modulesRequestRepository.findByIdAndIdUser(eq(requestId), eq(userId.toString())))
-            .thenReturn(Optional.of(farRequest));
+        when(modulesRequestRepository.findByIdAndIdUser(eq(requestId), eq(userId.toString()))).thenReturn(Optional.of(farRequest));
 
         final String expectedErrorMessage = "Renovação muito antecipada";
-
         doThrow(new RuntimeException(expectedErrorMessage))
             .when(errorHandler)
             .customErrorThrow(eq(400), eq(expectedErrorMessage));
 
-        assertThrows(RuntimeException.class, () ->
-            service.execute(credentials, uuidValidationDTO)
-        );
+        assertThrows(RuntimeException.class, () -> service.execute(credentials, uuidValidationDTO));
 
-        verify(modulesRequestRepository, times(1))
-            .findByIdAndIdUser(eq(requestId), eq(userId.toString()));
-        verify(errorHandler, times(1))
-            .customErrorThrow(eq(400), eq(expectedErrorMessage));
-        verify(modulesUtilsService, never()).renewRequestStatus(eq("QUALQUER PROTOCOLO"), eq("negado"), eq("QUALQUER MOTIVO"), any(ModulesRequestEntity.class), eq("QUALQUER USER ID"));
+        verify(modulesRequestRepository, times(1)).findByIdAndIdUser(eq(requestId), eq(userId.toString()));
+        verify(errorHandler, times(1)).customErrorThrow(eq(400), eq(expectedErrorMessage));
+        verify(modulesUtilsService, never()).renewRequestStatus(
+            eq("QUALQUER PROTOCOLO"),
+            eq("negado"),
+            eq("QUALQUER MOTIVO"),
+            argThat(entity -> entity.getId().equals(requestId)),
+            eq(userId.toString())
+        );
     }
 
     @Test
     void testExecute_ModulesDontExistOrInactive_ShouldCallRenewStatusDenyAndThrowError400() {
-
         ArgumentCaptor<String> protocolCaptor = ArgumentCaptor.forClass(String.class);
 
-        when(modulesRequestRepository.findByIdAndIdUser(eq(requestId), eq(userId.toString())))
-            .thenReturn(Optional.of(activeRequestEntity));
+        when(modulesRequestRepository.findByIdAndIdUser(eq(requestId), eq(userId.toString()))).thenReturn(Optional.of(activeRequestEntity));
 
         ModulesEntity moduleBInactive = new ModulesEntity(); moduleBInactive.setActive(false);
         when(modulesRepository.findByName(eq(MODULE_A))).thenReturn(Optional.empty());
         when(modulesRepository.findByName(eq(MODULE_B))).thenReturn(Optional.of(moduleBInactive));
 
         final String expectedErrorMessage = "Módulos inválidos";
-
         doThrow(new RuntimeException(expectedErrorMessage))
             .when(errorHandler)
             .customErrorThrow(eq(400), eq(expectedErrorMessage));
@@ -264,56 +241,43 @@ class ModulesRenewRequestServiceTest {
             protocolCaptor.capture(),
             eq("negado"),
             eq(expectedErrorMessage),
-            eq(activeRequestEntity),
+            argThat(entity -> entity.getId().equals(requestId)),
             eq(userId.toString())
         );
 
-        assertThrows(RuntimeException.class, () ->
-            service.execute(credentials, uuidValidationDTO)
-        );
+        assertThrows(RuntimeException.class, () -> service.execute(credentials, uuidValidationDTO));
 
         String capturedProtocol = protocolCaptor.getValue();
 
-        verify(modulesRequestRepository, times(1))
-            .findByIdAndIdUser(eq(requestId), eq(userId.toString()));
+        verify(modulesRequestRepository, times(1)).findByIdAndIdUser(eq(requestId), eq(userId.toString()));
         verify(modulesRepository, times(1)).findByName(eq(MODULE_A));
         verify(modulesRepository, times(1)).findByName(eq(MODULE_B));
-
         verify(modulesUtilsService, times(1)).renewRequestStatus(
             eq(capturedProtocol),
             eq("negado"),
             eq(expectedErrorMessage),
-            eq(activeRequestEntity),
+            argThat(entity -> entity.getId().equals(requestId)),
             eq(userId.toString())
         );
-        verify(errorHandler, times(1))
-            .customErrorThrow(eq(400), eq(expectedErrorMessage));
-
-        verify(modulesAllowedDepartmentsRepository, never())
-            .existsByModuleNameAndDepartment(eq(MODULE_A), eq("ti"));
+        verify(errorHandler, times(1)).customErrorThrow(eq(400), eq(expectedErrorMessage));
+        verify(modulesAllowedDepartmentsRepository, never()).existsByModuleNameAndDepartment(eq(MODULE_A), eq("ti"));
     }
 
     @Test
     void testExecute_ModuleNotAllowedForDepartment_ShouldCallRenewStatusDenyAndThrowError400() {
-
         ArgumentCaptor<String> protocolCaptor = ArgumentCaptor.forClass(String.class);
 
-        when(modulesRequestRepository.findByIdAndIdUser(eq(requestId), eq(userId.toString())))
-            .thenReturn(Optional.of(activeRequestEntity));
+        when(modulesRequestRepository.findByIdAndIdUser(eq(requestId), eq(userId.toString()))).thenReturn(Optional.of(activeRequestEntity));
 
         ModulesEntity moduleAEntity = new ModulesEntity(); moduleAEntity.setActive(true);
         ModulesEntity moduleBEntity = new ModulesEntity(); moduleBEntity.setActive(true);
         when(modulesRepository.findByName(eq(MODULE_A))).thenReturn(Optional.of(moduleAEntity));
         when(modulesRepository.findByName(eq(MODULE_B))).thenReturn(Optional.of(moduleBEntity));
 
-        when(modulesAllowedDepartmentsRepository.existsByModuleNameAndDepartment(eq(MODULE_A), eq("ti")))
-            .thenReturn(true);
-        when(modulesAllowedDepartmentsRepository.existsByModuleNameAndDepartment(eq(MODULE_B), eq("ti")))
-            .thenReturn(false);
+        when(modulesAllowedDepartmentsRepository.existsByModuleNameAndDepartment(eq(MODULE_A), eq("ti"))).thenReturn(true);
+        when(modulesAllowedDepartmentsRepository.existsByModuleNameAndDepartment(eq(MODULE_B), eq("ti"))).thenReturn(false);
 
-        final String baseErrorMessage = "Módulo não permitido para o departamento";
-        final String expectedDenialMessage = baseErrorMessage + " " + MODULE_B.toUpperCase();
-
+        final String expectedDenialMessage = "Módulo não permitido para o departamento " + MODULE_B.toUpperCase();
         doThrow(new RuntimeException(expectedDenialMessage))
             .when(errorHandler)
             .customErrorThrow(eq(400), eq(expectedDenialMessage));
@@ -322,33 +286,26 @@ class ModulesRenewRequestServiceTest {
             protocolCaptor.capture(),
             eq("negado"),
             eq(expectedDenialMessage),
-            eq(activeRequestEntity),
+            argThat(entity -> entity.getId().equals(requestId)),
             eq(userId.toString())
         );
 
-        assertThrows(RuntimeException.class, () ->
-            service.execute(credentials, uuidValidationDTO)
-        );
+        assertThrows(RuntimeException.class, () -> service.execute(credentials, uuidValidationDTO));
 
         String capturedProtocol = protocolCaptor.getValue();
 
-        verify(modulesRequestRepository, times(1))
-            .findByIdAndIdUser(eq(requestId), eq(userId.toString()));
+        verify(modulesRequestRepository, times(1)).findByIdAndIdUser(eq(requestId), eq(userId.toString()));
         verify(modulesRepository, times(1)).findByName(eq(MODULE_A));
         verify(modulesRepository, times(1)).findByName(eq(MODULE_B));
-        verify(modulesAllowedDepartmentsRepository, times(1))
-            .existsByModuleNameAndDepartment(eq(MODULE_A), eq("ti"));
-        verify(modulesAllowedDepartmentsRepository, times(1))
-            .existsByModuleNameAndDepartment(eq(MODULE_B), eq("ti"));
-
+        verify(modulesAllowedDepartmentsRepository, times(1)).existsByModuleNameAndDepartment(eq(MODULE_A), eq("ti"));
+        verify(modulesAllowedDepartmentsRepository, times(1)).existsByModuleNameAndDepartment(eq(MODULE_B), eq("ti"));
         verify(modulesUtilsService, times(1)).renewRequestStatus(
             eq(capturedProtocol),
             eq("negado"),
             eq(expectedDenialMessage),
-            eq(activeRequestEntity),
+            argThat(entity -> entity.getId().equals(requestId)),
             eq(userId.toString())
         );
-        verify(errorHandler, times(1))
-            .customErrorThrow(eq(400), eq(expectedDenialMessage));
+        verify(errorHandler, times(1)).customErrorThrow(eq(400), eq(expectedDenialMessage));
     }
 }

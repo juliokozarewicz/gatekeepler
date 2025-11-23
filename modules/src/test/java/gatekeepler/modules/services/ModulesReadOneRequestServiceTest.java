@@ -47,9 +47,9 @@ class ModulesReadOneRequestServiceTest {
             "department", "ti"
         );
 
-        when(messageSource.getMessage(eq("response_get_data_success"), eq(null), any()))
+        when(messageSource.getMessage(eq("response_get_data_success"), eq(null), eq(Locale.getDefault())))
             .thenReturn("success");
-        when(messageSource.getMessage(eq("response_request_dont_exist"), eq(null), any()))
+        when(messageSource.getMessage(eq("response_request_dont_exist"), eq(null), eq(Locale.getDefault())))
             .thenReturn("Não encontrado");
     }
 
