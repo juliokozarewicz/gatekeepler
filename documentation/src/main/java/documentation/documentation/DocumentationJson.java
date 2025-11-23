@@ -1576,7 +1576,7 @@ public class DocumentationJson {
                 "/${MODULES_BASE_URL}/read-modules": {
                     "get": {
                         "summary": "List all available modules",
-                        "description": "This endpoint allows users to list all available modules along with their details. It provides information about the module's name, description, allowed departments, its active status, and any mutually exclusive modules. Authentication is required for access, but credentials do not need to be passed explicitly.",
+                        "description": "This endpoint allows users to list all available modules along with their details. It provides information about the module's name, description, allowed departments, its active status, and any mutually exclusive modules.",
                         "tags": ["MODULES"],
                         "security": [
                             {
