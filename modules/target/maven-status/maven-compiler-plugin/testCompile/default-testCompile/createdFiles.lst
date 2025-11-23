@@ -1,0 +1,5 @@
+gatekeepler/modules/services/ModulesCreateRequestServiceTest.class
+gatekeepler/modules/services/ModulesReadModuleServiceTest.class
+gatekeepler/modules/services/ModulesReadOneRequestServiceTest.class
+gatekeepler/modules/services/ModulesRenewRequestServiceTest.class
+gatekeepler/modules/services/ModulesCancelRequestServiceTest.class

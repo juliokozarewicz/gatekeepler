@@ -3,7 +3,7 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn -B dependency:resolve dependency:resolve-plugins
 COPY src ./src
-RUN mvn -B clean package -DskipTests
+RUN mvn -B clean verify
 FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 RUN apk update && apk add --no-cache curl jq
