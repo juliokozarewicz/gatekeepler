@@ -52,22 +52,17 @@ class AccountsCreateServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        // Mock encryption
         when(encryptionService.hashPassword(eq(TEST_PASSWORD))).thenReturn(HASHED_PASSWORD);
 
-        // Mock cache manager
         when(cacheManager.getCache(eq("notActivatedAccountCache"))).thenReturn(notActivatedAccountCache);
 
-        // Mock message source
         when(messageSource.getMessage(eq("response_account_created_successfully"), eq(null), eq(Locale.getDefault())))
             .thenReturn(SUCCESS_MESSAGE);
 
-        // Mock management service
         when(accountsManagementService.createUniqueId()).thenReturn(GENERATED_ID);
         when(accountsManagementService.createVerificationToken(eq(GENERATED_ID), eq(AccountsUpdateEnum.ACTIVATE_ACCOUNT)))
             .thenReturn("TEST_TOKEN");
 
-        // Cria a instância do service usando construtor de teste
         accountsCreateService = new AccountsCreateService(
             messageSource,
             errorHandler,
@@ -91,14 +86,12 @@ class AccountsCreateServiceTest {
 
         ResponseEntity<?> response = accountsCreateService.execute(dto);
 
-        // Verifica interações
         verify(accountsRepository, times(1)).findByEmail(eq(TEST_EMAIL.toLowerCase()));
         verify(accountsRepository, times(1)).save(accountCaptor.capture());
         verify(accountsProfileRepository, times(1)).save(profileCaptor.capture());
         verify(notActivatedAccountCache, times(1)).put(eq(GENERATED_ID), cacheCaptor.capture());
         verify(accountsManagementService, times(1)).createVerificationToken(eq(GENERATED_ID), eq(AccountsUpdateEnum.ACTIVATE_ACCOUNT));
 
-        // Valida dados salvos
         AccountsEntity savedAccount = accountCaptor.getValue();
         assertEquals(GENERATED_ID, savedAccount.getId());
         assertEquals(TEST_EMAIL.toLowerCase(), savedAccount.getEmail());
@@ -109,7 +102,6 @@ class AccountsCreateServiceTest {
         assertEquals(GENERATED_ID, savedProfile.getId());
         assertEquals(TEST_NAME, savedProfile.getName());
 
-        // Valida resposta
         StandardResponseService body = (StandardResponseService) response.getBody();
         assertEquals(201, response.getStatusCodeValue());
         assertEquals(SUCCESS_MESSAGE, body.getMessage());
@@ -126,13 +118,11 @@ class AccountsCreateServiceTest {
 
         ResponseEntity<?> response = accountsCreateService.execute(dto);
 
-        // Valida interações específicas sem usar any()
         verify(accountsRepository, times(1)).findByEmail(eq(TEST_EMAIL.toLowerCase()));
         verify(accountsRepository, never()).save(argThat(account -> account.getId().equals(GENERATED_ID)));
         verify(accountsProfileRepository, never()).save(argThat(profile -> profile.getId().equals(GENERATED_ID)));
         verify(notActivatedAccountCache, never()).put(eq(GENERATED_ID), argThat(timestamp -> timestamp != null));
 
-        // Valida resposta
         StandardResponseService body = (StandardResponseService) response.getBody();
         assertEquals(201, response.getStatusCodeValue());
         assertEquals(SUCCESS_MESSAGE, body.getMessage());
