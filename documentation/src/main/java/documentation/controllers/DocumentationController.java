@@ -52,7 +52,7 @@ class DocumentationController {
         return "<html>\n" +
             "<head>\n" +
             "<title>" + applicationTitle.toUpperCase() + "</title>\n" +
-            "<link rel='icon' type='image/x-icon' href='" + publicDomain.split(",")[0].trim() + "/" + documentationBaseURL + "/static/public/favicon.ico' />\n" +
+            "<link rel='icon' type='image/x-icon' href='" + "http://" + publicDomain.split(",")[0].trim() + "/" + documentationBaseURL + "/static/public/favicon.ico' />\n" +
             "<script src='https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.52.5/swagger-ui-bundle.js'></script>\n" +
             "<link rel='stylesheet' type='text/css' href='https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.52.5/swagger-ui.css' />\n" +
             "<style>\n" +
