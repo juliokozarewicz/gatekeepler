@@ -1,14 +1,13 @@
 package gatekeepler.modules.services;
 
-import modules.dtos.ModuleResponseDTO;
-import modules.exceptions.ErrorHandler;
-import modules.persistence.entities.ModulesAllowedDepartmentsEntity;
-import modules.persistence.entities.ModulesEntity;
-import modules.persistence.entities.ModulesMutuallyExclusiveEntity;
-import modules.persistence.repositories.ModulesAllowedDepartmentsRepository;
-import modules.persistence.repositories.ModulesMutuallyExclusiveRepository;
-import modules.persistence.repositories.ModulesRepository;
-import modules.services.ModulesReadModuleService;
+import gatekeepler.modules.dtos.ModuleResponseDTO;
+import gatekeepler.modules.exceptions.ErrorHandler;
+import gatekeepler.modules.persistence.entities.ModulesAllowedDepartmentsEntity;
+import gatekeepler.modules.persistence.entities.ModulesEntity;
+import gatekeepler.modules.persistence.entities.ModulesMutuallyExclusiveEntity;
+import gatekeepler.modules.persistence.repositories.ModulesAllowedDepartmentsRepository;
+import gatekeepler.modules.persistence.repositories.ModulesMutuallyExclusiveRepository;
+import gatekeepler.modules.persistence.repositories.ModulesRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -89,7 +88,7 @@ class ModulesReadModuleServiceTest {
         assertNotNull(body);
 
         var dataList = (List<ModuleResponseDTO>)
-            ((modules.services.StandardResponseService) body).getData();
+            ((StandardResponseService) body).getData();
 
         assertEquals(1, dataList.size());
 

@@ -1,12 +1,10 @@
 package gatekeepler.modules.services;
 
-import modules.dtos.ModulesCreateRequestDTO;
-import modules.exceptions.ErrorHandler;
-import modules.persistence.repositories.ModulesAllowedDepartmentsRepository;
-import modules.persistence.repositories.ModulesRepository;
-import modules.persistence.repositories.ModulesRequestRepository;
-import modules.services.ModulesCreateRequestService;
-import modules.services.ModulesUtilsService;
+import gatekeepler.modules.dtos.ModulesCreateRequestDTO;
+import gatekeepler.modules.exceptions.ErrorHandler;
+import gatekeepler.modules.persistence.repositories.ModulesAllowedDepartmentsRepository;
+import gatekeepler.modules.persistence.repositories.ModulesRepository;
+import gatekeepler.modules.persistence.repositories.ModulesRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

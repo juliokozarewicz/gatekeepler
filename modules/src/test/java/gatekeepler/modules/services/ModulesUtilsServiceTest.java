@@ -1,9 +1,8 @@
 package gatekeepler.modules.services;
 
-import modules.dtos.ModulesCreateRequestDTO;
-import modules.persistence.entities.ModulesRequestEntity;
-import modules.persistence.repositories.ModulesRequestRepository;
-import modules.services.ModulesUtilsService;
+import gatekeepler.modules.dtos.ModulesCreateRequestDTO;
+import gatekeepler.modules.persistence.entities.ModulesRequestEntity;
+import gatekeepler.modules.persistence.repositories.ModulesRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

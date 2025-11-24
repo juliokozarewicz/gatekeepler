@@ -1,16 +1,13 @@
 package gatekeepler.accounts.services;
 
-import accounts.dtos.AccountsCreateDTO;
-import accounts.enums.AccountsUpdateEnum;
-import accounts.enums.UserLevelEnum;
-import accounts.persistence.entities.AccountsEntity;
-import accounts.persistence.entities.AccountsProfileEntity;
-import accounts.persistence.repositories.AccountsProfileRepository;
-import accounts.persistence.repositories.AccountsRepository;
-import accounts.services.AccountsCreateService;
-import accounts.services.AccountsManagementService;
-import accounts.services.EncryptionService;
-import accounts.services.StandardResponseService;
+import gatekeepler.accounts.dtos.AccountsCreateDTO;
+import gatekeepler.accounts.enums.AccountsUpdateEnum;
+import gatekeepler.accounts.enums.UserLevelEnum;
+import gatekeepler.accounts.exceptions.ErrorHandler;
+import gatekeepler.accounts.persistence.entities.AccountsEntity;
+import gatekeepler.accounts.persistence.entities.AccountsProfileEntity;
+import gatekeepler.accounts.persistence.repositories.AccountsProfileRepository;
+import gatekeepler.accounts.persistence.repositories.AccountsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -36,7 +33,7 @@ class AccountsCreateServiceTest {
     @Mock private CacheManager cacheManager;
     @Mock private Cache notActivatedAccountCache;
     @Mock private EncryptionService encryptionService;
-    @Mock private accounts.exceptions.ErrorHandler errorHandler;
+    @Mock private ErrorHandler errorHandler;
 
     private AccountsCreateService accountsCreateService;
 

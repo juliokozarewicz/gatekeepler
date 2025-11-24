@@ -12,7 +12,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>juliokozarewicz</groupId>
+    <groupId>gatekeepler</groupId>
     <artifactId>documentation</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 

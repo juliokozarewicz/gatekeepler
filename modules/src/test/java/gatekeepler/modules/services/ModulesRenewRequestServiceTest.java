@@ -1,15 +1,12 @@
 package gatekeepler.modules.services;
 
-import modules.dtos.UUIDValidationDTO;
-import modules.exceptions.ErrorHandler;
-import modules.persistence.entities.ModulesEntity;
-import modules.persistence.entities.ModulesRequestEntity;
-import modules.persistence.repositories.ModulesAllowedDepartmentsRepository;
-import modules.persistence.repositories.ModulesRepository;
-import modules.persistence.repositories.ModulesRequestRepository;
-import modules.services.ModulesRenewRequestService;
-import modules.services.ModulesUtilsService;
-import modules.services.StandardResponseService;
+import gatekeepler.modules.dtos.UUIDValidationDTO;
+import gatekeepler.modules.exceptions.ErrorHandler;
+import gatekeepler.modules.persistence.entities.ModulesEntity;
+import gatekeepler.modules.persistence.entities.ModulesRequestEntity;
+import gatekeepler.modules.persistence.repositories.ModulesAllowedDepartmentsRepository;
+import gatekeepler.modules.persistence.repositories.ModulesRepository;
+import gatekeepler.modules.persistence.repositories.ModulesRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

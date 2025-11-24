@@ -1,13 +1,9 @@
 package gatekeepler.accounts.services;
 
-import accounts.dtos.AccountsLoginDTO;
-import accounts.exceptions.ErrorHandler;
-import accounts.persistence.entities.AccountsEntity;
-import accounts.persistence.repositories.AccountsRepository;
-import accounts.services.AccountsLoginService;
-import accounts.services.AccountsManagementService;
-import accounts.services.EncryptionService;
-import accounts.services.StandardResponseService;
+import gatekeepler.accounts.dtos.AccountsLoginDTO;
+import gatekeepler.accounts.exceptions.ErrorHandler;
+import gatekeepler.accounts.persistence.entities.AccountsEntity;
+import gatekeepler.accounts.persistence.repositories.AccountsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;

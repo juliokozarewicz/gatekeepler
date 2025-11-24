@@ -1,10 +1,9 @@
 package gatekeepler.modules.services;
 
-import modules.dtos.UUIDValidationDTO;
-import modules.exceptions.ErrorHandler;
-import modules.persistence.entities.ModulesRequestEntity;
-import modules.persistence.repositories.ModulesRequestRepository;
-import modules.services.ModulesReadOneRequestService;
+import gatekeepler.modules.dtos.UUIDValidationDTO;
+import gatekeepler.modules.exceptions.ErrorHandler;
+import gatekeepler.modules.persistence.entities.ModulesRequestEntity;
+import gatekeepler.modules.persistence.repositories.ModulesRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

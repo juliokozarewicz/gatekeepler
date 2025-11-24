@@ -1573,7 +1573,7 @@ public class DocumentationJson {
             .append(
                 """
                 # ==============================================================
-                "/${MODULES_BASE_URL}/read-modules": {
+                "/MODULES_BASE_URL_REPLACE/read-modules": {
                     "get": {
                         "summary": "List all available modules",
                         "description": "This endpoint allows users to list all available modules along with their details. It provides information about the module's name, description, allowed departments, its active status, and any mutually exclusive modules.",
