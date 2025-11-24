@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">modules</a> &gt; <a href="index.source.html" class="el_package">gatekeepler.modules.filters</a> &gt; <span class="el_source">AuthenticationFilter.java</span></div><h1>AuthenticationFilter.java</h1><pre class="source lang-java linenums">package gatekeepler.modules.filters;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.web.filter.OncePerRequestFilter;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.MessageDigest;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.*;
+
+@Component
+public class AuthenticationFilter extends OncePerRequestFilter {
+
+// ========================================================== (Constructor init)
+
+    private final MessageSource messageSource;
+<span class="nc" id="L39">    private final AntPathMatcher pathMatcher = new AntPathMatcher();</span>
+    private SecretKey aesKey;
+    private List&lt;String&gt; publicPaths;
+
+    // Keys
+    // -------------------------------------------------------------------------
+    @Value(&quot;${SECRET_KEY}&quot;)
+    private String secretKey;
+
+    @Value(&quot;${PUBLIC_KEY}&quot;)
+    private String publicKey;
+
+    @Value(&quot;${MODULES_BASE_URL}&quot;)
+    private String modulesBaseURL;
+    // -------------------------------------------------------------------------
+
+    public AuthenticationFilter(
+
+        MessageSource messageSource
+
+<span class="nc" id="L59">    ) {</span>
+
+<span class="nc" id="L61">        this.messageSource = messageSource;</span>
+
+<span class="nc" id="L63">    }</span>
+    // ======================================================= (Constructor end)
+
+    // =================================================== (Post construct init)
+    @PostConstruct
+    private void init() {
+
+<span class="nc" id="L70">        publicPaths = Arrays.asList(</span>
+            &quot;/actuator/health&quot;,
+            &quot;/&quot; + modulesBaseURL + &quot;/static/public/**&quot;
+        );
+
+        try {
+
+<span class="nc" id="L77">            MessageDigest sha = MessageDigest.getInstance(&quot;SHA-256&quot;);</span>
+<span class="nc" id="L78">            byte[] keyBytes = sha.digest(secretKey.getBytes(StandardCharsets.UTF_8));</span>
+<span class="nc" id="L79">            this.aesKey = new SecretKeySpec(keyBytes, &quot;AES&quot;);</span>
+
+<span class="nc" id="L81">        } catch (Exception e) {</span>
+
+<span class="nc" id="L83">            throw new SecurityException(&quot;Failed to initialize AES key &quot; +</span>
+                &quot;[ AuthenticationFilter.init() ]: &quot;);
+
+<span class="nc" id="L86">        }</span>
+
+<span class="nc" id="L88">    }</span>
+
+    // Return public paths for spring security
+    public List&lt;String&gt; getPublicPaths() {
+<span class="nc" id="L92">        return new ArrayList&lt;&gt;(publicPaths);</span>
+    }
+    // ==================================================== (Post construct end)
+
+    // ================================================ (Assistant methods init)
+
+    // JWT validate
+    public Claims parseAndValidateToken(String token) {
+
+        try {
+
+<span class="nc" id="L103">            byte[] publicKeyBytes = Base64.getDecoder().decode(publicKey);</span>
+<span class="nc" id="L104">            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);</span>
+<span class="nc" id="L105">            KeyFactory keyFactory = KeyFactory.getInstance(&quot;RSA&quot;);</span>
+<span class="nc" id="L106">            PublicKey publicKeyObj = keyFactory.generatePublic(keySpec);</span>
+
+<span class="nc" id="L108">            Jws&lt;Claims&gt; parsedJwt = Jwts.parserBuilder()</span>
+<span class="nc" id="L109">                .setSigningKey(publicKeyObj)</span>
+<span class="nc" id="L110">                .setAllowedClockSkewSeconds(0)</span>
+<span class="nc" id="L111">                .build()</span>
+<span class="nc" id="L112">                .parseClaimsJws(token);</span>
+
+<span class="nc" id="L114">            String alg = parsedJwt.getHeader().getAlgorithm();</span>
+
+<span class="nc bnc" id="L116" title="All 2 branches missed.">            if (!SignatureAlgorithm.RS256.getValue().equals(alg)) {</span>
+<span class="nc" id="L117">                throw new SecurityException(&quot;Invalid JWT algorithm: &quot; + alg);</span>
+            }
+
+<span class="nc" id="L120">            return parsedJwt.getBody();</span>
+
+<span class="nc" id="L122">        } catch (Exception e) {</span>
+
+<span class="nc" id="L124">            throw new RuntimeException(&quot;Invalid JWT: &quot; + e.getMessage(), e);</span>
+
+        }
+
+    }
+
+    // decryption
+    public String decrypt(String encryptedText) {
+
+        try {
+
+<span class="nc" id="L135">            byte[] encryptedData = Base64.getUrlDecoder().decode(encryptedText);</span>
+
+<span class="nc" id="L137">            byte[] iv = new byte[12];</span>
+<span class="nc" id="L138">            byte[] ciphertext = new byte[encryptedData.length - iv.length];</span>
+
+<span class="nc" id="L140">            System.arraycopy(encryptedData, 0, iv, 0, iv.length);</span>
+<span class="nc" id="L141">            System.arraycopy(encryptedData, iv.length, ciphertext, 0, ciphertext.length);</span>
+
+<span class="nc" id="L143">            Cipher cipher = Cipher.getInstance(&quot;AES/GCM/NoPadding&quot;);</span>
+<span class="nc" id="L144">            GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);</span>
+<span class="nc" id="L145">            cipher.init(Cipher.DECRYPT_MODE, aesKey, gcmSpec);</span>
+
+<span class="nc" id="L147">            byte[] decryptedBytes = cipher.doFinal(ciphertext);</span>
+<span class="nc" id="L148">            return new String(decryptedBytes, StandardCharsets.UTF_8);</span>
+
+<span class="nc" id="L150">        } catch (Exception e) {</span>
+
+<span class="nc" id="L152">            throw new SecurityException(&quot;Error decrypting &quot; +</span>
+                &quot;[ AuthenticationFilter.decrypt() ]&quot;);
+
+        }
+
+    }
+
+    // Invalid access error (401)
+    private void invalidAccessError(
+        Locale locale,
+        HttpServletResponse response
+    ) throws IOException {
+
+<span class="nc" id="L165">        response.setStatus(401);</span>
+
+<span class="nc" id="L167">        Map&lt;String, Object&gt; errorResponse = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L168">        errorResponse.put(&quot;status&quot;, 401);</span>
+<span class="nc" id="L169">        errorResponse.put(&quot;statusMessage&quot;, &quot;error&quot;);</span>
+<span class="nc" id="L170">        errorResponse.put(</span>
+            &quot;message&quot;,
+<span class="nc" id="L172">            messageSource.getMessage(</span>
+                &quot;response_invalid_credentials&quot;, null, locale
+            )
+        );
+
+<span class="nc" id="L177">        ObjectMapper objectMapper = new ObjectMapper();</span>
+<span class="nc" id="L178">        String jsonResponse = objectMapper.writeValueAsString(errorResponse);</span>
+
+<span class="nc" id="L180">        response.setContentType(&quot;application/json&quot;);</span>
+<span class="nc" id="L181">        response.getWriter().write(jsonResponse);</span>
+
+<span class="nc" id="L183">    }</span>
+
+    // Server error (500)
+    private void serverError(
+        Locale locale,
+        HttpServletResponse response
+    ) throws IOException {
+
+<span class="nc" id="L191">        response.setStatus(500);</span>
+
+<span class="nc" id="L193">        Map&lt;String, Object&gt; errorResponse = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L194">        errorResponse.put(&quot;status&quot;, 500);</span>
+<span class="nc" id="L195">        errorResponse.put(&quot;statusMessage&quot;, &quot;error&quot;);</span>
+<span class="nc" id="L196">        errorResponse.put(</span>
+            &quot;message&quot;,
+<span class="nc" id="L198">            messageSource.getMessage(</span>
+                &quot;response_server_error&quot;, null, locale
+            )
+        );
+
+<span class="nc" id="L203">        ObjectMapper objectMapper = new ObjectMapper();</span>
+<span class="nc" id="L204">        String jsonResponse = objectMapper.writeValueAsString(errorResponse);</span>
+
+<span class="nc" id="L206">        response.setContentType(&quot;application/json&quot;);</span>
+<span class="nc" id="L207">        response.getWriter().write(jsonResponse);</span>
+
+<span class="nc" id="L209">    }</span>
+    // ================================================= (Assistant methods end)
+
+    @Override
+    protected void doFilterInternal(
+
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain filterChain
+
+    ) throws RuntimeException, IOException {
+
+        try {
+
+            // Language
+<span class="nc" id="L224">            Locale locale = LocaleContextHolder.getLocale();</span>
+
+            // ---------------------------------- (Route not authenticated init)
+<span class="nc" id="L227">            String requestPath = request.getRequestURI();</span>
+
+<span class="nc" id="L229">            boolean isNotProtected = publicPaths.stream().anyMatch(</span>
+<span class="nc" id="L230">                pattern -&gt; pathMatcher.match(pattern, requestPath)</span>
+            );
+
+<span class="nc bnc" id="L233" title="All 2 branches missed.">            if (isNotProtected) {</span>
+<span class="nc" id="L234">                filterChain.doFilter(request, response);</span>
+<span class="nc" id="L235">                return;</span>
+            }
+            // ----------------------------------- (Route not authenticated end)
+
+<span class="nc" id="L239">            String accessCredentialRaw = request.getHeader(&quot;Authorization&quot;);</span>
+
+<span class="nc bnc" id="L241" title="All 2 branches missed.">            String accessCredential = accessCredentialRaw != null ?</span>
+<span class="nc" id="L242">                accessCredentialRaw.replace(&quot;Bearer &quot;, &quot;&quot;) :</span>
+<span class="nc" id="L243">                null;</span>
+
+<span class="nc bnc" id="L245" title="All 4 branches missed.">            if (accessCredential == null || accessCredential.isBlank()) {</span>
+<span class="nc" id="L246">                invalidAccessError(locale, response);</span>
+<span class="nc" id="L247">                return;</span>
+            }
+            // -------------------------------------- (Get jwt from header init)
+
+            // --------------------------------------------- (Validate JWT init)
+            Claims claims;
+
+<span class="nc" id="L254">            try { claims = parseAndValidateToken(decrypt(accessCredential)); }</span>
+<span class="nc" id="L255">            catch (Exception e) { invalidAccessError(locale, response); return; }</span>
+            // ---------------------------------------------- (Validate JWT end)
+
+            // ---------------------------------------------- (Claim's map init)
+<span class="nc" id="L259">            if (</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">                claims.get(&quot;id&quot;) == null ||</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">                claims.get(&quot;email&quot;) == null ||</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">                claims.get(&quot;department&quot;) == null</span>
+            ) {
+<span class="nc" id="L264">                invalidAccessError(locale, response);</span>
+<span class="nc" id="L265">                return;</span>
+            }
+
+<span class="nc" id="L268">            Object idUser = claims.get(&quot;id&quot;);</span>
+<span class="nc" id="L269">            String emailUser = claims.get(&quot;email&quot;, String.class);</span>
+<span class="nc" id="L270">            String departmentUser = claims.get(&quot;department&quot;, String.class);</span>
+            // ----------------------------------------------- (Claim's map end)
+
+            // Convert roles
+<span class="nc" id="L274">            List&lt;SimpleGrantedAuthority&gt; authorities = Collections.singletonList(</span>
+<span class="nc" id="L275">                new SimpleGrantedAuthority(&quot;ROLE_&quot; + departmentUser.toUpperCase())</span>
+            );
+
+            // Create token
+<span class="nc" id="L279">            UsernamePasswordAuthenticationToken authentication =</span>
+                new UsernamePasswordAuthenticationToken(emailUser, null, authorities);
+
+            // User credentials data
+<span class="nc" id="L283">            Map&lt;String, Object&gt; dataMap = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L284">            dataMap.put(&quot;id&quot;, idUser);</span>
+<span class="nc" id="L285">            dataMap.put(&quot;email&quot;, emailUser);</span>
+<span class="nc" id="L286">            dataMap.put(&quot;department&quot;, departmentUser);</span>
+
+            // set attributes in the request
+<span class="nc" id="L289">            request.setAttribute(&quot;credentialsData&quot;, dataMap);</span>
+
+<span class="nc" id="L291">            SecurityContextHolder.getContext().setAuthentication(authentication);</span>
+<span class="nc" id="L292">            filterChain.doFilter(request, response);</span>
+
+<span class="nc" id="L294">        } catch (Exception e) {</span>
+
+            // Language
+<span class="nc" id="L297">            Locale locale = LocaleContextHolder.getLocale();</span>
+
+<span class="nc" id="L299">            serverError(locale, response);</span>
+
+<span class="nc" id="L301">        }</span>
+
+<span class="nc" id="L303">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

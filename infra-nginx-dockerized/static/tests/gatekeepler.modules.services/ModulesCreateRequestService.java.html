@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModulesCreateRequestService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">modules</a> &gt; <a href="index.source.html" class="el_package">gatekeepler.modules.services</a> &gt; <span class="el_source">ModulesCreateRequestService.java</span></div><h1>ModulesCreateRequestService.java</h1><pre class="source lang-java linenums">package gatekeepler.modules.services;
+
+import gatekeepler.modules.dtos.ModulesCreateRequestDTO;
+import gatekeepler.modules.exceptions.ErrorHandler;
+import gatekeepler.modules.persistence.entities.ModulesRequestEntity;
+import gatekeepler.modules.persistence.entities.ModulesEntity;
+import gatekeepler.modules.persistence.repositories.ModulesRequestRepository;
+import gatekeepler.modules.persistence.repositories.ModulesAllowedDepartmentsRepository;
+import gatekeepler.modules.persistence.repositories.ModulesRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+public class ModulesCreateRequestService {
+
+    // ==================================================== ( constructor init )
+
+    // Env
+    // -------------------------------------------------------------------------
+    @Value(&quot;${MODULES_BASE_URL}&quot;)
+    private String modulesBaseURL;
+    // -------------------------------------------------------------------------
+
+    private final MessageSource messageSource;
+    private final ModulesRequestRepository modulesRequestRepository;
+    private final ModulesAllowedDepartmentsRepository modulesAllowedDepartmentsRepository;
+    private final ModulesRepository modulesRepository;
+    private final ErrorHandler errorHandler;
+    private final ModulesUtilsService modulesUtilsService;
+
+    public ModulesCreateRequestService(
+
+        MessageSource messageSource,
+        ModulesRequestRepository modulesRequestRepository,
+        ModulesAllowedDepartmentsRepository modulesAllowedDepartmentsRepository,
+        ModulesRepository modulesRepository,
+        ErrorHandler errorHandler,
+        ModulesUtilsService modulesUtilsService
+
+<span class="fc" id="L48">    ) {</span>
+<span class="fc" id="L49">        this.messageSource = messageSource;</span>
+<span class="fc" id="L50">        this.modulesRequestRepository = modulesRequestRepository;</span>
+<span class="fc" id="L51">        this.modulesAllowedDepartmentsRepository = modulesAllowedDepartmentsRepository;</span>
+<span class="fc" id="L52">        this.modulesRepository = modulesRepository;</span>
+<span class="fc" id="L53">        this.errorHandler = errorHandler;</span>
+<span class="fc" id="L54">        this.modulesUtilsService = modulesUtilsService;</span>
+<span class="fc" id="L55">    }</span>
+
+    // ===================================================== ( constructor end )
+
+    public ResponseEntity execute(
+
+        Map&lt;String, Object&gt; credentialsData,
+        ModulesCreateRequestDTO modulesCreateRequestDTO
+
+    ) {
+
+        // language
+<span class="fc" id="L67">        Locale locale = LocaleContextHolder.getLocale();</span>
+
+        // Credentials
+<span class="fc" id="L70">        UUID idUser = UUID.fromString((String) credentialsData.get(&quot;id&quot;));</span>
+<span class="fc" id="L71">        String emailUser = (String) credentialsData.get(&quot;email&quot;.toLowerCase());</span>
+<span class="fc" id="L72">        String departmentUser = (String) credentialsData.get(&quot;department&quot;.toLowerCase());</span>
+
+        // Protocol number
+<span class="fc" id="L75">        String protocolNumber = ModulesUtilsService.generateProtocolNumber(</span>
+<span class="fc" id="L76">            ZonedDateTime.now(ZoneOffset.UTC).toInstant()</span>
+        );
+
+        // Validating Modules (minimum 1, maximum 3)
+<span class="fc" id="L80">        List&lt;String&gt; requestedModules = modulesCreateRequestDTO.modules();</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (</span>
+            requestedModules == null ||
+<span class="fc bfc" id="L83" title="All 2 branches covered.">            requestedModules.size() &lt; 1 ||</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            requestedModules.size() &gt; 3</span>
+        ) {
+
+<span class="fc" id="L87">            modulesUtilsService.createCommitRequestStatus(</span>
+                protocolNumber,
+                &quot;negado&quot;,
+<span class="fc" id="L90">                messageSource.getMessage(</span>
+                    &quot;response_many_modules_error&quot;,
+                    null,
+                    locale
+                ),
+                modulesCreateRequestDTO,
+<span class="fc" id="L96">                idUser.toString()</span>
+
+            );
+
+<span class="pc" id="L100">            errorHandler.customErrorThrow(</span>
+                400,
+<span class="fc" id="L102">                messageSource.getMessage(</span>
+                    &quot;response_many_modules_error&quot;,
+                    null,
+                    locale
+                )
+            );
+
+        }
+
+        // Checking if User Already Has Active Request for the Same Modules
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        for (String moduleName : requestedModules) {</span>
+
+<span class="fc" id="L114">            List&lt;ModulesRequestEntity&gt; existingRequests = modulesRequestRepository</span>
+<span class="fc" id="L115">                .findByIdUser(idUser.toString());</span>
+
+<span class="fc" id="L117">            boolean hasActiveRequestForModule = existingRequests.stream()</span>
+<span class="fc" id="L118">                .anyMatch(request -&gt; request</span>
+<span class="fc" id="L119">                    .getModuleNamesRequested()</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">                    .contains(</span>
+<span class="fc" id="L121">                        moduleName.toLowerCase()) &amp;&amp; &quot;ativo&quot;</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">                        .equals(request.getStatus().toLowerCase())</span>
+                    );
+
+<span class="fc bfc" id="L125" title="All 2 branches covered.">            if (hasActiveRequestForModule) {</span>
+
+<span class="fc" id="L127">                modulesUtilsService.createCommitRequestStatus(</span>
+                    protocolNumber,
+                    &quot;negado&quot;,
+<span class="fc" id="L130">                    messageSource.getMessage(</span>
+                        &quot;response_already_requested_error&quot;,
+                        null,
+                        locale
+<span class="fc" id="L134">                    ) + &quot; &quot; + moduleName.toUpperCase(),</span>
+                    modulesCreateRequestDTO,
+<span class="fc" id="L136">                    idUser.toString()</span>
+                );
+
+<span class="pc" id="L139">                errorHandler.customErrorThrow(</span>
+                    400,
+<span class="fc" id="L141">                    messageSource.getMessage(</span>
+                        &quot;response_already_requested_error&quot;,
+                        null,
+                        locale
+<span class="fc" id="L145">                    ) + &quot; &quot; + moduleName.toUpperCase()</span>
+                );
+
+            }
+
+<span class="fc" id="L150">        }</span>
+
+        // Validating if Modules Exist and Are Active
+<span class="fc" id="L153">        List&lt;ModulesEntity&gt; modules = modulesCreateRequestDTO.modules().stream()</span>
+<span class="fc" id="L154">            .map(moduleName -&gt; {</span>
+<span class="fc" id="L155">                Optional&lt;ModulesEntity&gt; moduleOpt = modulesRepository.findByName(moduleName.toLowerCase());</span>
+<span class="fc" id="L156">                return moduleOpt.filter(module -&gt; module.isActive()).orElse(null);</span>
+            })
+<span class="fc" id="L158">            .filter(Objects::nonNull)</span>
+<span class="fc" id="L159">            .collect(Collectors.toList());</span>
+
+<span class="fc bfc" id="L161" title="All 2 branches covered.">        if ( modules.size() != requestedModules.size() ) {</span>
+
+<span class="fc" id="L163">            modulesUtilsService.createCommitRequestStatus(</span>
+                protocolNumber,
+                &quot;negado&quot;,
+<span class="fc" id="L166">                messageSource.getMessage(</span>
+                    &quot;request_modules_dont_exist&quot;,
+                    null,
+                    locale
+                ),
+                modulesCreateRequestDTO,
+<span class="fc" id="L172">                idUser.toString()</span>
+            );
+
+<span class="pc" id="L175">            errorHandler.customErrorThrow(</span>
+                400,
+<span class="fc" id="L177">                messageSource.getMessage(</span>
+                    &quot;request_modules_dont_exist&quot;,
+                    null,
+                    locale
+                )
+            );
+
+        }
+
+        // Checking if User Already Has Access to Modules
+<span class="fc bfc" id="L187" title="All 2 branches covered.">        for (String moduleName : requestedModules) {</span>
+
+<span class="fc" id="L189">            boolean hasAccess = modulesAllowedDepartmentsRepository</span>
+<span class="fc" id="L190">                .existsByModuleNameAndDepartment(</span>
+<span class="fc" id="L191">                    moduleName.toLowerCase(),</span>
+<span class="fc" id="L192">                    departmentUser.toLowerCase()</span>
+                );
+
+<span class="fc bfc" id="L195" title="All 2 branches covered.">            if (!hasAccess) {</span>
+
+<span class="fc" id="L197">                modulesUtilsService.createCommitRequestStatus(</span>
+                    protocolNumber,
+                    &quot;negado&quot;,
+<span class="fc" id="L200">                    messageSource.getMessage(</span>
+                        &quot;request_module_not_allowed_error&quot;,
+                        null,
+                        locale
+<span class="fc" id="L204">                    ) + &quot; &quot; + moduleName.toUpperCase(),</span>
+                    modulesCreateRequestDTO,
+<span class="fc" id="L206">                    idUser.toString()</span>
+                );
+
+<span class="pc" id="L209">                errorHandler.customErrorThrow(</span>
+                    400,
+<span class="fc" id="L211">                    messageSource.getMessage(</span>
+                        &quot;request_module_not_allowed_error&quot;,
+                        null,
+                        locale
+<span class="fc" id="L215">                    ) + &quot; &quot; + moduleName.toUpperCase()</span>
+                );
+
+            }
+
+<span class="fc" id="L220">        }</span>
+
+        // Commit DB
+        // ---------------------------------------------------------------------
+<span class="fc" id="L224">        modulesUtilsService.createCommitRequestStatus(</span>
+            protocolNumber,
+            &quot;ativo&quot;,
+            null,
+            modulesCreateRequestDTO,
+<span class="fc" id="L229">            idUser.toString()</span>
+
+        );
+        // ---------------------------------------------------------------------
+
+        // response (links)
+<span class="fc" id="L235">        Map&lt;String, String&gt; customLinks = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L236">        customLinks.put(&quot;self&quot;, &quot;/&quot; + modulesBaseURL + &quot;/create-request&quot;);</span>
+<span class="fc" id="L237">        customLinks.put(&quot;next&quot;, &quot;/&quot; + modulesBaseURL + &quot;/read-requests&quot;);</span>
+
+        // reponse (body)
+<span class="fc" id="L240">        StandardResponseService response = new StandardResponseService.Builder()</span>
+<span class="fc" id="L241">            .statusCode(201)</span>
+<span class="fc" id="L242">            .statusMessage(&quot;success&quot;)</span>
+<span class="fc" id="L243">            .message(</span>
+<span class="fc" id="L244">                messageSource.getMessage(</span>
+                    &quot;response_request_aproved&quot;,
+                    null,
+                    locale
+                ) + &quot; &quot; + protocolNumber
+            )
+<span class="fc" id="L250">            .links(customLinks)</span>
+<span class="fc" id="L251">            .build();</span>
+
+<span class="fc" id="L253">        return ResponseEntity</span>
+<span class="fc" id="L254">            .status(response.getStatusCode())</span>
+<span class="fc" id="L255">            .body(response);</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

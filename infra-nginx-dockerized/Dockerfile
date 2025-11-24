@@ -1,15 +1,14 @@
 FROM nginx:latest
-
-# Instala envsubst
 RUN apt-get update && apt-get install -y gettext-base
 
-# Copia o template do nginx
+# nginx template
 COPY nginx.conf.template /etc/nginx/nginx.conf.template
 
-# Cria diretório de cache, logs etc se necessário
-RUN mkdir -p /var/log/nginx /tmp/nginx_cache
+# static files
+COPY static /usr/share/nginx/static
+RUN chmod -R 755 /usr/share/nginx/static
 
-# Comando de entrada: substitui variáveis e inicia nginx
+RUN mkdir -p /var/log/nginx /tmp/nginx_cache
 CMD envsubst ' \
     $HELLOWORLD_PORT \
     $DOCUMENTATION_PORT \

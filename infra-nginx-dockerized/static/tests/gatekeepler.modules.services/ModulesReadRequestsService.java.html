@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModulesReadRequestsService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">modules</a> &gt; <a href="index.source.html" class="el_package">gatekeepler.modules.services</a> &gt; <span class="el_source">ModulesReadRequestsService.java</span></div><h1>ModulesReadRequestsService.java</h1><pre class="source lang-java linenums">package gatekeepler.modules.services;
+
+import gatekeepler.modules.dtos.ModulesReadRequestsDTO;
+import gatekeepler.modules.exceptions.ErrorHandler;
+import gatekeepler.modules.persistence.entities.ModulesRequestEntity;
+import gatekeepler.modules.persistence.repositories.ModulesRequestRepository;
+import gatekeepler.modules.persistence.specifications.ModulesReadRequestsSpecification;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+
+@Service
+public class ModulesReadRequestsService {
+
+    // ==================================================== ( constructor init )
+
+    // Env
+    // -------------------------------------------------------------------------
+    @Value(&quot;${MODULES_BASE_URL}&quot;)
+    private String modulesBaseURL;
+    // -------------------------------------------------------------------------
+
+    private final MessageSource messageSource;
+    private final ErrorHandler errorHandler;
+    private final ModulesRequestRepository modulesRequestRepository;
+
+    public ModulesReadRequestsService(
+
+        MessageSource messageSource,
+        ModulesRequestRepository modulesRequestRepository,
+        ErrorHandler errorHandler
+
+<span class="fc" id="L43">    ) {</span>
+<span class="fc" id="L44">        this.messageSource = messageSource;</span>
+<span class="fc" id="L45">        this.errorHandler = errorHandler;</span>
+<span class="fc" id="L46">        this.modulesRequestRepository = modulesRequestRepository;</span>
+<span class="fc" id="L47">    }</span>
+
+    // ===================================================== ( constructor end )
+
+    public ResponseEntity execute(
+
+        Map&lt;String, Object&gt; credentialsData,
+        ModulesReadRequestsDTO modulesReadRequestsDTO
+
+    ) {
+
+        // language
+<span class="fc" id="L59">        Locale locale = LocaleContextHolder.getLocale();</span>
+
+        // Credentials
+<span class="fc" id="L62">        UUID idUser = UUID.fromString((String) credentialsData.get(&quot;id&quot;));</span>
+
+        // Filter
+<span class="fc" id="L65">        Specification&lt;ModulesRequestEntity&gt; spec =</span>
+<span class="fc" id="L66">            ModulesReadRequestsSpecification.filter(</span>
+<span class="fc" id="L67">                modulesReadRequestsDTO.protocolNumber(),</span>
+<span class="fc" id="L68">                modulesReadRequestsDTO.moduleName(),</span>
+<span class="fc" id="L69">                modulesReadRequestsDTO.status(),</span>
+<span class="fc" id="L70">                modulesReadRequestsDTO.urgent(),</span>
+<span class="fc" id="L71">                modulesReadRequestsDTO.startDate(),</span>
+<span class="fc" id="L72">                modulesReadRequestsDTO.endDate(),</span>
+<span class="fc" id="L73">                idUser.toString()</span>
+            );
+
+        // Pagination
+        // ---------------------------------------------------------------------
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        int pageNumber = modulesReadRequestsDTO.page() != null</span>
+<span class="fc" id="L79">        ? modulesReadRequestsDTO.page()</span>
+<span class="pc" id="L80">        : 0;</span>
+
+<span class="fc" id="L82">        Pageable pageable = PageRequest.of(</span>
+            pageNumber,
+            10,
+<span class="fc" id="L85">            Sort.by(Sort.Direction.DESC, &quot;createdAt&quot;)</span>
+        );
+
+<span class="fc" id="L88">        Page&lt;ModulesRequestEntity&gt; page = modulesRequestRepository</span>
+<span class="fc" id="L89">            .findAll(spec, pageable);</span>
+        // ---------------------------------------------------------------------
+
+        // Entity
+<span class="fc" id="L93">        List&lt;Map&lt;String, Object&gt;&gt; result = page.getContent().stream()</span>
+<span class="fc" id="L94">            .map(req -&gt; {</span>
+
+<span class="fc" id="L96">                Map&lt;String, Object&gt; map = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L97">                map.put(&quot;id&quot;, req.getId());</span>
+<span class="fc" id="L98">                map.put(&quot;protocol&quot;, req.getProtocolNumber());</span>
+<span class="fc" id="L99">                map.put(&quot;requestedModules&quot;, req.getModuleNamesRequested());</span>
+<span class="fc" id="L100">                map.put(&quot;status&quot;, req.getStatus());</span>
+<span class="fc" id="L101">                map.put(&quot;justification&quot;, req.getJustification());</span>
+<span class="fc" id="L102">                map.put(&quot;urgent&quot;, req.isUrgent());</span>
+<span class="fc" id="L103">                map.put(&quot;requestDate&quot;, req.getCreatedAt());</span>
+<span class="fc" id="L104">                map.put(&quot;expirationDate&quot;, req.getCreatedAt().plus(180, ChronoUnit.DAYS));</span>
+
+                // protocol number if exist
+<span class="fc bfc" id="L107" title="All 2 branches covered.">                if (req.getLinkedProtocol() != null) {</span>
+<span class="fc" id="L108">                    map.put(&quot;linkedProtocol&quot;, req.getLinkedProtocol());</span>
+                }
+
+                // Use ternary operators to decide which fields to include
+<span class="fc bfc" id="L112" title="All 2 branches covered.">                if (&quot;ativo&quot;.equals(req.getStatus())) {</span>
+<span class="fc" id="L113">                    map.remove(&quot;denialReason&quot;);</span>
+<span class="fc" id="L114">                    map.remove(&quot;cancelReason&quot;);</span>
+                }
+
+                // &quot;negado&quot; - only show denialReason, remove cancelReason and linkedProtocol
+<span class="fc bfc" id="L118" title="All 2 branches covered.">                else if (&quot;negado&quot;.equals(req.getStatus())) {</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">                    map.put(&quot;denialReason&quot;, req.getDenialReason() != null ? req.getDenialReason() : null);</span>
+<span class="fc" id="L120">                    map.remove(&quot;cancelReason&quot;);</span>
+                }
+
+                // &quot;cancelado&quot; - only show cancelReason, remove denialReason and linkedProtocol
+<span class="fc bfc" id="L124" title="All 2 branches covered.">                else if (&quot;cancelado&quot;.equals(req.getStatus())) {</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">                    map.put(&quot;cancelReason&quot;, req.getCancelReason() != null ? req.getCancelReason() : null);</span>
+<span class="fc" id="L126">                    map.remove(&quot;denialReason&quot;);</span>
+
+                } else {
+
+                    // For any other status, remove all extra fields
+<span class="fc" id="L131">                    map.remove(&quot;denialReason&quot;);</span>
+<span class="fc" id="L132">                    map.remove(&quot;cancelReason&quot;);</span>
+
+                }
+
+<span class="fc" id="L136">                return map;</span>
+            })
+<span class="fc" id="L138">            .toList();</span>
+
+        // Meta
+<span class="fc" id="L141">        Map&lt;String, Object&gt; metaData = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L142">        metaData.put(&quot;page&quot;, page.getNumber());</span>
+<span class="fc" id="L143">        metaData.put(&quot;totalPages&quot;, page.getTotalPages());</span>
+<span class="fc" id="L144">        metaData.put(&quot;totalItems&quot;, page.getTotalElements());</span>
+
+        // response (links)
+<span class="fc" id="L147">        Map&lt;String, String&gt; customLinks = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L148">        customLinks.put(&quot;self&quot;, &quot;/&quot; + modulesBaseURL + &quot;/read-requests&quot;);</span>
+
+<span class="fc" id="L150">        StandardResponseService response = new StandardResponseService.Builder()</span>
+<span class="fc" id="L151">            .statusCode(200)</span>
+<span class="fc" id="L152">            .statusMessage(&quot;success&quot;)</span>
+<span class="fc" id="L153">            .message(</span>
+<span class="fc" id="L154">                messageSource.getMessage(</span>
+                    &quot;response_get_data_success&quot;,
+                    null,
+                    locale
+                )
+            )
+<span class="fc" id="L160">            .data(result)</span>
+<span class="fc" id="L161">            .meta(metaData)</span>
+<span class="fc" id="L162">            .links(customLinks)</span>
+<span class="fc" id="L163">            .build();</span>
+
+<span class="fc" id="L165">        return ResponseEntity</span>
+<span class="fc" id="L166">            .status(response.getStatusCode())</span>
+<span class="fc" id="L167">            .body(response);</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

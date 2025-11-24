@@ -1,6 +1,5 @@
 package gatekeepler.accounts.services;
 
-import accounts.dtos.*;
 import gatekeepler.accounts.dtos.AccountsCacheRefreshTokenDTO;
 import gatekeepler.accounts.dtos.AccountsCacheRefreshTokensListDTO;
 import gatekeepler.accounts.dtos.AccountsCacheRefreshTokensListMetaDTO;

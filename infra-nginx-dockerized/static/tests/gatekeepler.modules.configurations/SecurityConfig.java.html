@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">modules</a> &gt; <a href="index.source.html" class="el_package">gatekeepler.modules.configurations</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package gatekeepler.modules.configurations;
+
+import gatekeepler.modules.filters.AuthenticationFilter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.List;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
+public class SecurityConfig {
+
+    // ====================================================== (Constructor init)
+
+    private final AuthenticationFilter authenticationFilter;
+    private final List&lt;String&gt; publicPaths;
+
+    public SecurityConfig(
+
+        AuthenticationFilter authenticationFilter
+
+<span class="nc" id="L29">    ) {</span>
+
+<span class="nc" id="L31">        this.authenticationFilter = authenticationFilter;</span>
+<span class="nc" id="L32">        this.publicPaths = authenticationFilter.getPublicPaths();</span>
+
+<span class="nc" id="L34">    }</span>
+    // ======================================================= (Constructor end)
+
+    // ========================================================== (Methods init)
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+<span class="nc" id="L41">        http</span>
+<span class="nc" id="L42">            .csrf(csrf -&gt; csrf.disable())</span>
+<span class="nc" id="L43">            .sessionManagement(session -&gt;</span>
+<span class="nc" id="L44">                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
+<span class="nc" id="L45">            .authorizeHttpRequests(authz -&gt; authz</span>
+<span class="nc" id="L46">                .requestMatchers(publicPaths.toArray(new String[0])).permitAll()</span>
+<span class="nc" id="L47">                .anyRequest().authenticated()</span>
+            )
+<span class="nc" id="L49">            .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);</span>
+
+<span class="nc" id="L51">        return http.build();</span>
+
+    }
+    // =========================================================== (Methods end)
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModulesCancelRequestService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">modules</a> &gt; <a href="index.source.html" class="el_package">gatekeepler.modules.services</a> &gt; <span class="el_source">ModulesCancelRequestService.java</span></div><h1>ModulesCancelRequestService.java</h1><pre class="source lang-java linenums">package gatekeepler.modules.services;
+
+import gatekeepler.modules.dtos.ModulesCancelRequestDTO;
+import gatekeepler.modules.dtos.UUIDValidationDTO;
+import gatekeepler.modules.exceptions.ErrorHandler;
+import gatekeepler.modules.persistence.entities.ModulesRequestEntity;
+import gatekeepler.modules.persistence.repositories.ModulesRequestRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.*;
+
+@Service
+public class ModulesCancelRequestService {
+
+    // ==================================================== ( constructor init )
+
+    // Env
+    // -------------------------------------------------------------------------
+    @Value(&quot;${MODULES_BASE_URL}&quot;)
+    private String modulesBaseURL;
+    // -------------------------------------------------------------------------
+
+    private final MessageSource messageSource;
+    private final ErrorHandler errorHandler;
+    private final ModulesRequestRepository modulesRequestRepository;
+
+    public ModulesCancelRequestService(
+
+        MessageSource messageSource,
+        ModulesRequestRepository modulesRequestRepository,
+        ErrorHandler errorHandler
+
+<span class="fc" id="L39">    ) {</span>
+<span class="fc" id="L40">        this.messageSource = messageSource;</span>
+<span class="fc" id="L41">        this.errorHandler = errorHandler;</span>
+<span class="fc" id="L42">        this.modulesRequestRepository = modulesRequestRepository;</span>
+<span class="fc" id="L43">    }</span>
+
+    // ===================================================== ( constructor end )
+
+    public ResponseEntity execute(
+
+        Map&lt;String, Object&gt; credentialsData,
+        UUIDValidationDTO UUIDValidationDTO,
+        ModulesCancelRequestDTO modulesCancelRequestDTO
+
+    ) {
+
+        // language
+<span class="fc" id="L56">        Locale locale = LocaleContextHolder.getLocale();</span>
+
+        // Credentials
+<span class="fc" id="L59">        UUID idUser = UUID.fromString((String) credentialsData.get(&quot;id&quot;));</span>
+<span class="fc" id="L60">        String emailUser = (String) credentialsData.get(&quot;email&quot;.toLowerCase());</span>
+<span class="fc" id="L61">        String departmentUser = (String) credentialsData.get(&quot;department&quot;.toLowerCase());</span>
+
+        // find request
+<span class="fc" id="L64">        UUID parsedUUID = UUID.fromString(UUIDValidationDTO.id());</span>
+
+<span class="fc" id="L66">        Optional&lt;ModulesRequestEntity&gt; existingRequest = modulesRequestRepository</span>
+<span class="fc" id="L67">            .findByIdAndIdUser(parsedUUID, idUser.toString());</span>
+
+        // check request
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (existingRequest.isEmpty()) {</span>
+
+            // call custom error
+<span class="fc" id="L73">            errorHandler.customErrorThrow(</span>
+                404,
+<span class="fc" id="L75">                messageSource.getMessage(</span>
+                    &quot;response_request_dont_exist&quot;, null, locale
+                )
+            );
+
+        }
+
+        // request status
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (!existingRequest.get().getStatus().equalsIgnoreCase(&quot;ativo&quot;)) {</span>
+
+<span class="pc" id="L85">            errorHandler.customErrorThrow(</span>
+                400,
+<span class="fc" id="L87">                messageSource.getMessage(</span>
+                    &quot;response_request_not_active&quot;, null, locale
+                )
+            );
+
+        }
+
+        // Cancel request
+<span class="fc" id="L95">        ModulesRequestEntity requestEntity = existingRequest.get();</span>
+<span class="fc" id="L96">        requestEntity.setUpdatedAt(ZonedDateTime.now(ZoneOffset.UTC).toInstant());</span>
+<span class="fc" id="L97">        requestEntity.setStatus(&quot;cancelado&quot;);</span>
+<span class="fc" id="L98">        requestEntity.setCancelReason(modulesCancelRequestDTO.justification());</span>
+
+        // Save the updated request entity
+<span class="fc" id="L101">        modulesRequestRepository.save(requestEntity);</span>
+
+        // response (links)
+<span class="fc" id="L104">        Map&lt;String, String&gt; customLinks = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L105">        customLinks.put(&quot;self&quot;, &quot;/&quot; + modulesBaseURL + &quot;/cancel-request/&quot; + UUIDValidationDTO.id());</span>
+<span class="fc" id="L106">        customLinks.put(&quot;next&quot;, &quot;/&quot; + modulesBaseURL + &quot;/read-requests&quot;);</span>
+
+        // reponse (body)
+<span class="fc" id="L109">        StandardResponseService response = new StandardResponseService.Builder()</span>
+<span class="fc" id="L110">            .statusCode(200)</span>
+<span class="fc" id="L111">            .statusMessage(&quot;success&quot;)</span>
+<span class="fc" id="L112">            .message(</span>
+<span class="fc" id="L113">                messageSource.getMessage(</span>
+                    &quot;response_request_cancel_success&quot;,
+                    null,
+                    locale
+                )
+            )
+<span class="fc" id="L119">            .links(customLinks)</span>
+<span class="fc" id="L120">            .build();</span>
+
+<span class="fc" id="L122">        return ResponseEntity</span>
+<span class="fc" id="L123">            .status(response.getStatusCode())</span>
+<span class="fc" id="L124">            .body(response);</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
