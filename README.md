@@ -13,10 +13,10 @@ sudo docker compose up --build -d
 ```
 
 - **Documentation endpoint:**
-  [**http://localhost/api/v1/documentation**](http://localhost/api/v1/documentation)
+  [http://localhost/api/v1/documentation](http://localhost/api/v1/documentation)
 
 - **Postman files:**
-  [**CLICK HERE TO DOWNLOAD**](0_utils/postman-files/)
+  [CLICK HERE TO DOWNLOAD](0_utils/postman-files/)
 
 ---
 
