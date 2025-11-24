@@ -4,7 +4,7 @@ This project implements the complete solution for a Mid-Level Java Developer tec
 
 ---
 
-## **How to Run with Docker**
+<h2 style="color:red; font-weight:bold;">How to Run with Docker</h2>
 
 - **Inside the “gatekeepler” root, access the “1_deploy” directory and run the command to start the application:**
 
