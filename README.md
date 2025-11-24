@@ -17,9 +17,10 @@ sudo docker compose up --build -d
   [http://localhost/api/v1/documentation](http://localhost/api/v1/documentation)
 
 - **Postman files:**
-- Make sure to set the `base_url` variable in the collection variables before running the command.
 
-  [CLICK HERE TO DOWNLOAD](0_utils/postman-files/)
+  Before running the command, **make sure to set the** `base_url` **variable in the collection variables** to ensure proper functionality.
+
+  [**CLICK HERE TO DOWNLOAD**](0_utils/postman-files/)
 
 ---
 
