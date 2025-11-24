@@ -1,0 +1,537 @@
+{
+	"info": {
+		"_postman_id": "b218e197-5338-4551-831c-f7304ada61cb",
+		"name": "GATEKEEPLER",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34562005",
+		"_collection_link": "https://julio-kozarewicz.postman.co/workspace/GATEKEEPLER~f05420e3-a069-40eb-8330-3669d83081df/collection/34562005-b218e197-5338-4551-831c-f7304ada61cb?action=share&source=collection_link&creator=34562005"
+	},
+	"item": [
+		{
+			"name": "1 - HELLO WORLD",
+			"item": [
+				{
+					"name": "helloworld",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/helloworld?message=test_message",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"helloworld"
+							],
+							"query": [
+								{
+									"key": "message",
+									"value": "test_message"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2 - ACCOUNTS",
+			"item": [
+				{
+					"name": "signup",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"My Name\",\n    \"department\": \"ti\",\n    \"email\": \"ti@email.com\",\n    \"password\": \"Teste123456!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var access = jsonData.data.access;\r",
+									"    var refresh = jsonData.data.refresh;\r",
+									"    pm.globals.set(\"access\", access);\r",
+									"    pm.globals.set(\"refresh\", refresh);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"operacoes@email.com\",\n    \"password\": \"Teste123456!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "refresh-login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var access = jsonData.data.access;\r",
+									"    var refresh = jsonData.data.refresh;\r",
+									"    pm.globals.set(\"access\", access);\r",
+									"    pm.globals.set(\"refresh\", refresh);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"refreshToken\": \"{{refresh}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/refresh-login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"refresh-login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/get-profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"get-profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update-profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Updated Name\",\r\n    \"phone\": \"+55 00 99999-9999\",\r\n    \"identityDocument\": \"123456789\",\r\n    \"gender\": \"male\",\r\n    \"birthdate\": \"2000-01-01\",\r\n    \"biography\": \"Abc.\",\r\n    \"language\": \"pt-BR\",\r\n    \"theme\": \"dark-mode\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/update-profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"update-profile"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3 - MODULES",
+			"item": [
+				{
+					"name": "create-request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"modules\": [\n    \"POrTal do ColAboRador\",\n    \"RelAtórios GereNciais\",\n    \"AudiToriA\"\n  ],\n  \"justification\": \"Teste de texto para uma justificação.\",\n  \"urgent\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/modules/create-request",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								"create-request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "read-requests",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/modules/read-requests?page=&protocolNumber=&status=&moduleName=&urgent=&startDate=&endDate=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								"read-requests"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": ""
+								},
+								{
+									"key": "protocolNumber",
+									"value": ""
+								},
+								{
+									"key": "status",
+									"value": ""
+								},
+								{
+									"key": "moduleName",
+									"value": ""
+								},
+								{
+									"key": "urgent",
+									"value": ""
+								},
+								{
+									"key": "startDate",
+									"value": ""
+								},
+								{
+									"key": "endDate",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "read-one-request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/modules/read-one-request/d4bb6532-592c-4c4e-9445-cc5a5745d96d",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								"read-one-request",
+								"d4bb6532-592c-4c4e-9445-cc5a5745d96d"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "renew-request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/modules/renew-request/eb57a573-eef2-4fb3-848f-a26e75ce9d58",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								"renew-request",
+								"eb57a573-eef2-4fb3-848f-a26e75ce9d58"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cancel-request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"justification\": \"Teste para uma justificativa de cancelamento.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/modules/cancel-request/19176499-91de-43e8-9604-ea274b550964",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								"cancel-request",
+								"19176499-91de-43e8-9604-ea274b550964"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "read-modules",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "pt",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/modules/read-modules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								"read-modules"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
