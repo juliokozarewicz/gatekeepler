@@ -286,4 +286,77 @@ class ModulesReadRequestsServiceTest {
 
         verify(modulesRequestRepository).findAll(specMatcher(), eq(pageable(0)));
     }
+
+    @Test
+    void testExecute_ShouldCoverNullEmailAndDepartmentValues() {
+
+        Map<String, Object> credentialsNullValues = new HashMap<>();
+        credentialsNullValues.put("id", userId.toString());
+
+        ModulesReadRequestsDTO dto =
+            new ModulesReadRequestsDTO(null, null, null, false, 0, null, null);
+
+        ModulesRequestEntity req = new ModulesRequestEntity();
+        req.setId(UUID.randomUUID());
+        req.setProtocolNumber("PROTO-X");
+        req.setModuleNamesRequested(List.of("abc"));
+        req.setStatus("ativo");
+        req.setCreatedAt(Instant.now());
+
+        Page<ModulesRequestEntity> page =
+            new PageImpl<>(List.of(req), pageable(0), 1);
+
+        when(modulesRequestRepository.findAll(specMatcher(), eq(pageable(0))))
+            .thenReturn(page);
+
+        ResponseEntity response = service.execute(credentialsNullValues, dto);
+
+        assertNotNull(response);
+
+        StandardResponseService body =
+            (StandardResponseService) response.getBody();
+
+        assertNotNull(body);
+        assertEquals(1, ((List<?>) body.getData()).size());
+
+        verify(modulesRequestRepository)
+            .findAll(specMatcher(), eq(pageable(0)));
+    }
+
+    @Test
+    void testExecute_StatusAtivo_LinkedProtocolNull_ShouldCoverMissingBranch() {
+
+        ModulesReadRequestsDTO dto =
+            new ModulesReadRequestsDTO("AAA", "mod", "ativo", false, 0, null, null);
+
+        ModulesRequestEntity req = new ModulesRequestEntity();
+        req.setId(UUID.randomUUID());
+        req.setProtocolNumber("AAA");
+        req.setModuleNamesRequested(List.of("mod"));
+        req.setStatus("ativo");
+        req.setJustification("ok");
+        req.setUrgent(false);
+        req.setLinkedProtocol(null);
+        req.setCreatedAt(Instant.now());
+
+        Page<ModulesRequestEntity> page =
+            new PageImpl<>(List.of(req), pageable(0), 1);
+
+        when(modulesRequestRepository.findAll(specMatcher(), eq(pageable(0))))
+            .thenReturn(page);
+
+        ResponseEntity response = service.execute(credentials, dto);
+
+        Map<String, Object> item =
+            ((List<Map<String, Object>>)
+                ((StandardResponseService) response.getBody()).getData()
+            ).get(0);
+
+        assertEquals("ativo", item.get("status"));
+
+        assertFalse(item.containsKey("linkedProtocol"));
+
+        verify(modulesRequestRepository).findAll(specMatcher(), eq(pageable(0)));
+    }
+
 }

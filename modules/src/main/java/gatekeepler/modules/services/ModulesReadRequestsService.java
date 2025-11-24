@@ -60,8 +60,6 @@ public class ModulesReadRequestsService {
 
         // Credentials
         UUID idUser = UUID.fromString((String) credentialsData.get("id"));
-        String emailUser = (String) credentialsData.get("email".toLowerCase());
-        String departmentUser = (String) credentialsData.get("department".toLowerCase());
 
         // Filter
         Specification<ModulesRequestEntity> spec =

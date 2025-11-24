@@ -205,6 +205,21 @@
                             <rules>
                                 <rule>
                                     <element>BUNDLE</element>
+
+                                    <!-- EXCLUSÕES QUE FALTAVAM -->
+                                    <excludes>
+                                        <!-- main class-->
+                                        <exclude>**/ModulesApplication.class</exclude>
+
+                                        <!-- excludes -->
+                                        <exclude>**/controllers/**/*</exclude>
+                                        <exclude>**/dtos/**/*</exclude>
+                                        <exclude>**/exceptions/**/*</exclude>
+                                        <exclude>**/filters/**/*</exclude>
+                                        <exclude>**/configurations/**/*</exclude>
+                                        <exclude>**/specifications/**/*</exclude>
+                                    </excludes>
+
                                     <limits>
                                         <limit>
                                             <counter>INSTRUCTION</counter>
