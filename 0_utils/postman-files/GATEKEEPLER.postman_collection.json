@@ -86,11 +86,20 @@
 								"exec": [
 									"if (pm.response.code === 200) {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    var access = jsonData.data.access;\r",
-									"    var refresh = jsonData.data.refresh;\r",
-									"    pm.globals.set(\"access\", access);\r",
-									"    pm.globals.set(\"refresh\", refresh);\r",
+									"    pm.collectionVariables.set(\"access\", jsonData.data.access);\r",
+									"    pm.collectionVariables.set(\"refresh\", jsonData.data.refresh);\r",
 									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -138,10 +147,8 @@
 								"exec": [
 									"if (pm.response.code === 200) {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    var access = jsonData.data.access;\r",
-									"    var refresh = jsonData.data.refresh;\r",
-									"    pm.globals.set(\"access\", access);\r",
-									"    pm.globals.set(\"refresh\", refresh);\r",
+									"    pm.collectionVariables.set(\"access\", jsonData.data.access);\r",
+									"    pm.collectionVariables.set(\"refresh\", jsonData.data.refresh);\r",
 									"}"
 								],
 								"type": "text/javascript",
@@ -151,6 +158,16 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -532,6 +549,44 @@
 					"response": []
 				}
 			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "access",
+			"value": ""
+		},
+		{
+			"key": "refresh",
+			"value": ""
+		},
+		{
+			"key": "base_url",
+			"value": ""
 		}
 	]
 }
