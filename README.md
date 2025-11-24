@@ -4,7 +4,7 @@ This project implements the complete solution for a Mid-Level Java Developer tec
 
 ---
 
-<h2 style="color:red; font-weight:bold;">How to Run with Docker</h2>
+## **How to Run with Docker**
 
 - **Inside the “gatekeepler” root, access the “1_deploy” directory and run the command to start the application:**
 
@@ -17,6 +17,7 @@ sudo docker compose up --build -d
   [http://localhost/api/v1/documentation](http://localhost/api/v1/documentation)
 
 - **Postman files:**
+- Make sure to set the `base_url` variable in the collection variables before running the command.
 
   [CLICK HERE TO DOWNLOAD](0_utils/postman-files/)
 
