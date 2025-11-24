@@ -76,14 +76,6 @@ http {
         }
         # -------------------------------------------------------------- (health end)
 
-        # -------------------------------------------------------------- (tests init)
-        location /api/v1/test-report/ {
-            alias /usr/share/nginx/static/tests/;
-            index index.html;
-            autoindex on;
-        }
-        # --------------------------------------------------------------- (tests end)
-
         proxy_connect_timeout 30s;
         proxy_send_timeout 30s;
         proxy_read_timeout 30s;
