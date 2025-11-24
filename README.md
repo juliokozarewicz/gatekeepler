@@ -14,9 +14,9 @@ sudo docker compose up --build -d
 
 - **Documentation endpoint:**
 
-  [http://localhost/api/v1/documentation](http://localhost/api/v1/documentation)
+  [**http://localhost/api/v1/documentation**](http://localhost/api/v1/documentation)
 
-- **Postman files:**
+- **Postman files**
 
   Before running the command, **make sure to set the** `base_url` **variable in the collection variables** to ensure proper functionality.
 
