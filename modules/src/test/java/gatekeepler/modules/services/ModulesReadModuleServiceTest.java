@@ -1,18 +1,17 @@
 package gatekeepler.modules.services;
 
 import gatekeepler.modules.dtos.ModuleResponseDTO;
-import gatekeepler.modules.exceptions.ErrorHandler;
 import gatekeepler.modules.persistence.entities.ModulesAllowedDepartmentsEntity;
 import gatekeepler.modules.persistence.entities.ModulesEntity;
 import gatekeepler.modules.persistence.entities.ModulesMutuallyExclusiveEntity;
 import gatekeepler.modules.persistence.repositories.ModulesAllowedDepartmentsRepository;
 import gatekeepler.modules.persistence.repositories.ModulesMutuallyExclusiveRepository;
 import gatekeepler.modules.persistence.repositories.ModulesRepository;
+import gatekeepler.modules.exceptions.ErrorHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
+
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 
@@ -24,86 +23,100 @@ import static org.mockito.Mockito.*;
 
 class ModulesReadModuleServiceTest {
 
-    @Mock
-    private MessageSource messageSource;
+    @Mock private MessageSource messageSource;
+    @Mock private ErrorHandler errorHandler;
+    @Mock private ModulesRepository modulesRepository;
+    @Mock private ModulesMutuallyExclusiveRepository mutuallyExclusiveRepository;
+    @Mock private ModulesAllowedDepartmentsRepository allowedDepartmentsRepository;
 
-    @Mock
-    private ErrorHandler errorHandler;
+    @InjectMocks private ModulesReadModuleService service;
 
-    @Mock
-    private ModulesRepository modulesRepository;
-
-    @Mock
-    private ModulesMutuallyExclusiveRepository mutuallyExclusiveRepository;
-
-    @Mock
-    private ModulesAllowedDepartmentsRepository allowedDepartmentsRepository;
-
-    @InjectMocks
-    private ModulesReadModuleService service;
+    private Locale locale;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        locale = Locale.getDefault();
 
-        when(
-            messageSource.getMessage(
-                eq("response_get_data_success"),
-                isNull(),
-                eq(Locale.getDefault())
-            )
-        ).thenReturn("sucesso");
+        when(messageSource.getMessage(eq("response_get_data_success"), eq(null), eq(locale)))
+            .thenReturn("Dados obtidos");
     }
 
     @Test
-    void testExecute_ShouldReturnListOfModules() {
+    void execute_ShouldReturnModulesWithAllowedAndIncompatibleLists() {
 
-        ModulesEntity module = new ModulesEntity();
-        module.setName("portal do colaborador");
-        module.setDescription("descrição teste");
-        module.setActive(true);
+        ModulesEntity moduleA = new ModulesEntity();
+        moduleA.setName("portal do colaborador");
+        moduleA.setDescription("acesso basico");
+        moduleA.setActive(true);
 
-        when(modulesRepository.findAll()).thenReturn(List.of(module));
+        ModulesEntity moduleB = new ModulesEntity();
+        moduleB.setName("relatorios gerenciais");
+        moduleB.setDescription("relatorios");
+        moduleB.setActive(true);
 
-        ModulesAllowedDepartmentsEntity allowedDept = new ModulesAllowedDepartmentsEntity();
-        allowedDept.setDepartment("ti");
+        when(modulesRepository.findAll()).thenReturn(List.of(moduleA, moduleB));
 
-        when(allowedDepartmentsRepository.findByModuleName("portal do colaborador"))
-            .thenReturn(List.of(allowedDept));
+        ModulesAllowedDepartmentsEntity ad1 = new ModulesAllowedDepartmentsEntity();
+        ad1.setModuleName("portal do colaborador");
+        ad1.setDepartment("ti");
 
-        ModulesMutuallyExclusiveEntity exclusive = new ModulesMutuallyExclusiveEntity();
-        exclusive.setModuleAName("portal do colaborador");
-        exclusive.setModuleBName("relatórios gerenciais");
+        when(allowedDepartmentsRepository.findByModuleName(eq("portal do colaborador")))
+            .thenReturn(List.of(ad1));
 
-        when(mutuallyExclusiveRepository.findByModuleANameOrModuleBName(
-            "portal do colaborador",
-            "portal do colaborador"
-        )).thenReturn(List.of(exclusive));
+        ModulesMutuallyExclusiveEntity me = new ModulesMutuallyExclusiveEntity();
+        me.setModuleAName("portal do colaborador");
+        me.setModuleBName("relatorios gerenciais");
+
+        when(mutuallyExclusiveRepository.findByModuleANameOrModuleBName(eq("portal do colaborador"), eq("portal do colaborador")))
+            .thenReturn(List.of(me));
+
+        when(allowedDepartmentsRepository.findByModuleName(eq("relatorios gerenciais")))
+            .thenReturn(List.of());
+
+        when(mutuallyExclusiveRepository.findByModuleANameOrModuleBName(eq("relatorios gerenciais"), eq("relatorios gerenciais")))
+            .thenReturn(List.of(me));
 
         ResponseEntity response = service.execute();
 
-        assertEquals(200, response.getStatusCode().value());
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
 
-        Object body = response.getBody();
-        assertNotNull(body);
+        StandardResponseService body = (StandardResponseService) response.getBody();
+        assertEquals("Dados obtidos", body.getMessage());
 
-        var dataList = (List<ModuleResponseDTO>)
-            ((StandardResponseService) body).getData();
+        @SuppressWarnings("unchecked")
+        List<ModuleResponseDTO> dtos = (List<ModuleResponseDTO>) body.getData();
+        assertEquals(2, dtos.size());
 
-        assertEquals(1, dataList.size());
+        ModuleResponseDTO dtoA = dtos.stream()
+            .filter(d -> "portal do colaborador".equals(d.getModuleName()))
+            .findFirst()
+            .orElse(null);
 
-        ModuleResponseDTO dto = dataList.get(0);
-
-        assertEquals("portal do colaborador", dto.getModuleName());
-        assertEquals("descrição teste", dto.getDescription());
-        assertTrue(dto.isActive());
-        assertEquals(List.of("ti"), dto.getAllowedDepartments());
-        assertEquals(List.of("relatórios gerenciais"), dto.getIncompatibleModules());
+        assertNotNull(dtoA);
+        assertEquals("acesso basico", dtoA.getDescription());
+        assertTrue(dtoA.isActive());
+        assertEquals(1, dtoA.getAllowedDepartments().size());
+        assertEquals("ti", dtoA.getAllowedDepartments().get(0));
+        assertEquals(1, dtoA.getIncompatibleModules().size());
+        assertTrue(dtoA.getIncompatibleModules().contains("relatorios gerenciais"));
 
         verify(modulesRepository, times(1)).findAll();
-        verify(allowedDepartmentsRepository, times(1))
-            .findByModuleName("portal do colaborador");
-        verify(mutuallyExclusiveRepository, times(1))
-            .findByModuleANameOrModuleBName("portal do colaborador", "portal do colaborador");
+        verify(allowedDepartmentsRepository, times(1)).findByModuleName(eq("portal do colaborador"));
+        verify(mutuallyExclusiveRepository, times(1)).findByModuleANameOrModuleBName(eq("portal do colaborador"), eq("portal do colaborador"));
+    }
+
+    @Test
+    void execute_ShouldHandleNoModulesGracefully() {
+        when(modulesRepository.findAll()).thenReturn(List.of());
+
+        ResponseEntity response = service.execute();
+
+        StandardResponseService body = (StandardResponseService) response.getBody();
+        assertNotNull(body);
+        assertEquals(0, ((List<?>) body.getData()).size());
+
+        verify(modulesRepository, times(1)).findAll();
     }
 }

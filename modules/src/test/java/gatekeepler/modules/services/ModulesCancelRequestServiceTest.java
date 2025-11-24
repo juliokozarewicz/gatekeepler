@@ -50,7 +50,6 @@ class ModulesCancelRequestServiceTest {
             "department", "ti"
         );
 
-        // Valores explícitos SEM ANY()
         when(messageSource.getMessage(eq("response_request_dont_exist"), eq(null), eq(Locale.getDefault())))
             .thenReturn("not found");
 

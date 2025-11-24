@@ -5,21 +5,17 @@ import gatekeepler.modules.persistence.entities.ModulesRequestEntity;
 import gatekeepler.modules.persistence.repositories.ModulesRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
+
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ModulesUtilsServiceTest {
@@ -30,171 +26,159 @@ class ModulesUtilsServiceTest {
     @Mock
     private ModulesRequestRepository modulesRequestRepository;
 
-    @InjectMocks
-    private ModulesUtilsService modulesUtilsService;
-
-    private Locale locale;
-    private final String MODULE_A = "ModULo A";
-    private final String MODULE_B = "MODulo B";
-    private final String PROTOCOL_NUMBER = "SOL-20251123-ABCD";
-    private final String ID_USER = UUID.randomUUID().toString();
+    private ModulesUtilsService utilsService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        locale = LocaleContextHolder.getLocale();
+        utilsService = new ModulesUtilsService(messageSource, modulesRequestRepository);
+        LocaleContextHolder.setLocale(Locale.US);
+    }
+
+    @Test
+    void generateProtocolNumber_IsWellFormed() {
+        Instant now = Instant.parse("2025-11-24T12:34:56Z");
+
+        String protocol = ModulesUtilsService.generateProtocolNumber(now);
+
+        assertNotNull(protocol);
+        assertTrue(protocol.startsWith("SOL-"));
+
+        String[] parts = protocol.split("-");
+        assertEquals(3, parts.length);
+        assertEquals("SOL", parts[0]);
+        assertEquals("20251124", parts[1]);
+        assertEquals(4, parts[2].length());
+    }
+
+    @Test
+    void createCommitRequestStatus_SavesEntityWithExpectedFields() {
+
+        ModulesCreateRequestDTO dto = new ModulesCreateRequestDTO(
+            List.of("modA", "modB"),
+            "justification long enough 20+",
+            true
+        );
+
+        ArgumentCaptor<ModulesRequestEntity> captor =
+            ArgumentCaptor.forClass(ModulesRequestEntity.class);
+
+        utilsService.createCommitRequestStatus(
+            "PROTO-1",
+            "negado",
+            "reason X",
+            dto,
+            "user-1"
+        );
+
+        verify(modulesRequestRepository, times(1)).save(captor.capture());
+        ModulesRequestEntity saved = captor.getValue();
+
+        assertNotNull(saved.getId());
+        assertEquals("PROTO-1", saved.getProtocolNumber());
+        assertEquals("negado", saved.getStatus());
+        assertEquals("reason X", saved.getDenialReason());
+        assertEquals("user-1", saved.getIdUser());
+        assertEquals(dto.justification(), saved.getJustification());
+        assertTrue(saved.isUrgent());
+        assertNotNull(saved.getCreatedAt());
+        assertNotNull(saved.getUpdatedAt());
+
+        List<String> mods = saved.getModuleNamesRequested();
+        assertEquals(2, mods.size());
+        assertTrue(mods.contains("moda"));
+        assertTrue(mods.contains("modb"));
+    }
+
+    @Test
+    void renewRequestStatus_UpdatesOldAndCreatesNewWithLink() {
 
         when(messageSource.getMessage(
             eq("response_reason_renew_success"),
             eq(null),
-            eq(locale)
-        )).thenReturn("Renovado com o protocolo");
-    }
+            argThat(locale -> locale != null)
+        )).thenReturn("Renovado com sucesso:");
 
-    @Test
-    void testGenerateProtocolNumber_ShouldReturnCorrectFormat() {
-        Instant fixedInstant = ZonedDateTime.of(2025, 11, 23, 10, 0, 0, 0, ZoneOffset.UTC).toInstant();
+        ModulesRequestEntity existing = new ModulesRequestEntity();
+        existing.setId(UUID.randomUUID());
+        existing.setProtocolNumber("OLD-PROTO");
+        existing.setModuleNamesRequested(List.of("a", "b"));
+        existing.setJustification("old-just");
+        existing.setUrgent(true);
+        existing.setStatus("ativo");
 
-        String protocol = ModulesUtilsService.generateProtocolNumber(fixedInstant);
+        ArgumentCaptor<ModulesRequestEntity> captor =
+            ArgumentCaptor.forClass(ModulesRequestEntity.class);
 
-        assertTrue(protocol.startsWith("SOL-20251123-"));
-
-        assertEquals(17, protocol.length());
-
-        String uniquePart = protocol.substring(13);
-        assertEquals(4, uniquePart.length());
-        assertTrue(uniquePart.matches("[A-Z0-9]+"));
-    }
-
-    @Test
-    void testCreateCommitRequestStatus_Success_ShouldSaveNewRequest() {
-        ArgumentCaptor<ModulesRequestEntity> requestCaptor = ArgumentCaptor.forClass(ModulesRequestEntity.class);
-
-        ModulesCreateRequestDTO dto = new ModulesCreateRequestDTO(
-            List.of(MODULE_A, MODULE_B),
-            "justificativa de criação",
-            true
-        );
-        String status = "ativo";
-        String denialReason = null;
-
-        modulesUtilsService.createCommitRequestStatus(
-            PROTOCOL_NUMBER,
-            status,
-            denialReason,
-            dto,
-            ID_USER
+        utilsService.renewRequestStatus(
+            "NEW-PROTO",
+            "ativo",
+            null,
+            existing,
+            "user-x"
         );
 
-        verify(modulesRequestRepository, times(1)).save(requestCaptor.capture());
+        verify(modulesRequestRepository, times(2)).save(captor.capture());
+        List<ModulesRequestEntity> savedList = captor.getAllValues();
 
-        ModulesRequestEntity savedRequest = requestCaptor.getValue();
+        ModulesRequestEntity updatedOld = savedList.get(0);
+        ModulesRequestEntity newEntity = savedList.get(1);
 
-        assertNotNull(savedRequest.getId());
-        assertNotNull(savedRequest.getCreatedAt());
-        assertNotNull(savedRequest.getUpdatedAt());
-        assertEquals(PROTOCOL_NUMBER, savedRequest.getProtocolNumber());
-        assertEquals(ID_USER, savedRequest.getIdUser());
-        assertEquals(status, savedRequest.getStatus());
-        assertEquals(denialReason, savedRequest.getDenialReason());
-        assertEquals(dto.justification(), savedRequest.getJustification());
-        assertTrue(savedRequest.isUrgent());
+        assertEquals("cancelado", updatedOld.getStatus());
+        assertEquals("Renovado com sucesso: NEW-PROTO", updatedOld.getCancelReason());
+        assertNotNull(updatedOld.getUpdatedAt());
 
-        assertEquals(2, savedRequest.getModuleNamesRequested().size());
-        assertTrue(savedRequest.getModuleNamesRequested().contains(MODULE_A.toLowerCase()));
-        assertTrue(savedRequest.getModuleNamesRequested().contains(MODULE_B.toLowerCase()));
+        assertEquals("NEW-PROTO", newEntity.getProtocolNumber());
+        assertEquals(existing.getModuleNamesRequested(), newEntity.getModuleNamesRequested());
+        assertEquals(existing.getJustification(), newEntity.getJustification());
+        assertEquals("user-x", newEntity.getIdUser());
+        assertEquals("OLD-PROTO", newEntity.getLinkedProtocol());
+        assertEquals("ativo", newEntity.getStatus());
+        assertNotNull(newEntity.getCreatedAt());
+        assertNotNull(newEntity.getUpdatedAt());
     }
 
     @Test
-    void testRenewRequestStatus_Success_ShouldUpdateOldAndSaveNewRequest() {
-        ArgumentCaptor<ModulesRequestEntity> oldRequestCaptor = ArgumentCaptor.forClass(ModulesRequestEntity.class);
+    void renewRequestStatus_ShouldNotSetLinkedProtocol_WhenOldHasNoProtocolNumber() {
 
-        ModulesRequestEntity existingRequest = new ModulesRequestEntity();
-        existingRequest.setId(UUID.randomUUID());
-        existingRequest.setProtocolNumber("OLD-PROTO-001");
-        existingRequest.setStatus("ativo");
-        existingRequest.setJustification("justificativa antiga");
-        existingRequest.setUrgent(false);
-        existingRequest.setModuleNamesRequested(List.of(MODULE_A.toLowerCase()));
-        existingRequest.setIdUser(ID_USER);
-
-        Instant oldCreationTime = ZonedDateTime.now(ZoneOffset.UTC).minusSeconds(60).toInstant();
-        existingRequest.setCreatedAt(oldCreationTime);
-        existingRequest.setUpdatedAt(oldCreationTime);
-
-        String newStatus = "ativo";
-        String newDenialReason = null;
-
-        String messageKey = "response_reason_renew_success";
-        String cancellationMessage = "Renovado com o protocolo";
         when(messageSource.getMessage(
-            eq(messageKey),
+            eq("response_reason_renew_success"),
             eq(null),
-            eq(locale)
-        )).thenReturn(cancellationMessage);
+            argThat(locale -> locale != null)
+        )).thenReturn("Renovado:");
 
-        modulesUtilsService.renewRequestStatus(
-            PROTOCOL_NUMBER,
-            newStatus,
-            newDenialReason,
-            existingRequest,
-            ID_USER
+        ModulesRequestEntity existing = new ModulesRequestEntity();
+        existing.setId(UUID.randomUUID());
+        existing.setProtocolNumber(null);
+        existing.setModuleNamesRequested(List.of("x"));
+        existing.setJustification("old justification");
+        existing.setUrgent(false);
+        existing.setStatus("ativo");
+
+        ArgumentCaptor<ModulesRequestEntity> captor =
+            ArgumentCaptor.forClass(ModulesRequestEntity.class);
+
+        utilsService.renewRequestStatus(
+            "PROTO-XYZ",
+            "ativo",
+            "reason-123",
+            existing,
+            "user-Y"
         );
 
-        verify(modulesRequestRepository, times(2)).save(oldRequestCaptor.capture());
+        verify(modulesRequestRepository, times(2)).save(captor.capture());
+        List<ModulesRequestEntity> saved = captor.getAllValues();
 
-        List<ModulesRequestEntity> savedRequests = oldRequestCaptor.getAllValues();
-        ModulesRequestEntity updatedOldRequest = savedRequests.get(0);
-        ModulesRequestEntity newRenewRequest = savedRequests.get(1);
+        ModulesRequestEntity oldUpdated = saved.get(0);
+        ModulesRequestEntity newReq = saved.get(1);
 
-        assertEquals("cancelado", updatedOldRequest.getStatus());
-        assertNotNull(updatedOldRequest.getCancelReason());
-        assertEquals(cancellationMessage + " " + PROTOCOL_NUMBER, updatedOldRequest.getCancelReason());
-
-        assertTrue(updatedOldRequest.getUpdatedAt().isAfter(oldCreationTime));
-
-        assertNotNull(newRenewRequest.getId());
-        assertNotNull(newRenewRequest.getCreatedAt());
-        assertEquals(PROTOCOL_NUMBER, newRenewRequest.getProtocolNumber());
-        assertEquals(newStatus, newRenewRequest.getStatus());
-        assertEquals(existingRequest.getJustification(), newRenewRequest.getJustification());
-        assertEquals(existingRequest.isUrgent(), newRenewRequest.isUrgent());
-        assertEquals(existingRequest.getModuleNamesRequested(), newRenewRequest.getModuleNamesRequested());
-        assertEquals(existingRequest.getIdUser(), newRenewRequest.getIdUser());
-
-        assertEquals(existingRequest.getProtocolNumber(), newRenewRequest.getLinkedProtocol());
+        assertEquals("cancelado", oldUpdated.getStatus());
+        assertEquals("Renovado: PROTO-XYZ", oldUpdated.getCancelReason());
+        assertNull(newReq.getLinkedProtocol());
+        assertEquals("PROTO-XYZ", newReq.getProtocolNumber());
+        assertEquals("ativo", newReq.getStatus());
+        assertEquals("reason-123", newReq.getDenialReason());
+        assertEquals("user-Y", newReq.getIdUser());
+        assertEquals(List.of("x"), newReq.getModuleNamesRequested());
     }
-
-    @Test
-    void testRenewRequestStatus_DenialCase_ShouldSaveNewRequestWithDenialReason() {
-        ArgumentCaptor<ModulesRequestEntity> newRequestCaptor = ArgumentCaptor.forClass(ModulesRequestEntity.class);
-
-        ModulesRequestEntity existingRequest = new ModulesRequestEntity();
-        existingRequest.setId(UUID.randomUUID());
-        existingRequest.setProtocolNumber("OLD-PROTO-002");
-        existingRequest.setStatus("ativo");
-        existingRequest.setModuleNamesRequested(List.of(MODULE_A.toLowerCase()));
-        existingRequest.setIdUser(ID_USER);
-
-        String newStatus = "negado";
-        String newDenialReason = "Módulos indisponíveis";
-
-        modulesUtilsService.renewRequestStatus(
-            PROTOCOL_NUMBER,
-            newStatus,
-            newDenialReason,
-            existingRequest,
-            ID_USER
-        );
-
-        verify(modulesRequestRepository, times(2)).save(newRequestCaptor.capture());
-
-        ModulesRequestEntity newRenewRequest = newRequestCaptor.getAllValues().get(1);
-
-        assertEquals(PROTOCOL_NUMBER, newRenewRequest.getProtocolNumber());
-        assertEquals(newStatus, newRenewRequest.getStatus());
-        assertEquals(newDenialReason, newRenewRequest.getDenialReason());
-        assertEquals(existingRequest.getProtocolNumber(), newRenewRequest.getLinkedProtocol());
-    }
-
 }

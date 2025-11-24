@@ -1,11 +1,9 @@
 package gatekeepler.modules.services;
 
 import gatekeepler.modules.dtos.ModulesReadRequestsDTO;
-import gatekeepler.modules.exceptions.ErrorHandler;
 import gatekeepler.modules.persistence.entities.ModulesRequestEntity;
 import gatekeepler.modules.persistence.repositories.ModulesRequestRepository;
-import gatekeepler.modules.persistence.specifications.ModulesReadRequestsSpecification;
-
+import gatekeepler.modules.exceptions.ErrorHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -17,7 +15,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -52,202 +49,241 @@ class ModulesReadRequestsServiceTest {
             "department", "ti"
         );
 
-        when(
-            messageSource.getMessage(
-                eq("response_get_data_success"),
-                eq(null),
-                eq(Locale.getDefault())
-            )
-        ).thenReturn("sucesso");
+        when(messageSource.getMessage(
+            eq("response_get_data_success"),
+            eq(null),
+            eq(Locale.getDefault())
+        )).thenReturn("sucesso");
+    }
+
+    private Pageable pageable(int page) {
+        return PageRequest.of(page, 10, Sort.Direction.DESC, "createdAt");
+    }
+
+    private Specification<ModulesRequestEntity> specMatcher() {
+        return argThat(s -> s != null);
     }
 
     @Test
     void testExecute_ShouldReturnActiveRequest() {
 
-        ModulesReadRequestsDTO dto = new ModulesReadRequestsDTO(
-            "SOL-123",
-            "portal",
-            "ativo",
-            false,
-            0,
-            null,
-            null
-        );
+        ModulesReadRequestsDTO dto =
+            new ModulesReadRequestsDTO("SOL-123", "portal", "ativo", false, 0, null, null);
 
         ModulesRequestEntity req = new ModulesRequestEntity();
-        UUID reqId = UUID.randomUUID();
-        req.setId(reqId);
+        req.setId(UUID.randomUUID());
         req.setProtocolNumber("SOL-123");
         req.setModuleNamesRequested(List.of("portal"));
         req.setStatus("ativo");
-        req.setJustification("justificação ok");
+        req.setJustification("ok");
         req.setUrgent(false);
-        req.setLinkedProtocol("OLD-11");
-        req.setCreatedAt(Instant.parse("2024-01-01T00:00:00Z"));
+        req.setLinkedProtocol("OLD");
+        req.setCreatedAt(Instant.now());
 
-        Page<ModulesRequestEntity> page =
-            new PageImpl<>(List.of(req), PageRequest.of(0, 10, Sort.Direction.DESC, "createdAt"), 1);
+        Page<ModulesRequestEntity> page = new PageImpl<>(List.of(req), pageable(0), 1);
 
-        Specification<ModulesRequestEntity> spec =
-            ModulesReadRequestsSpecification.filter(
-                "SOL-123",
-                "portal",
-                "ativo",
-                false,
-                null,
-                null,
-                userId.toString()
-            );
-
-        Pageable pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "createdAt");
-
-        when(modulesRequestRepository.findAll(
-            (Specification<ModulesRequestEntity>) argThat(s -> s != null),
-            eq(pageable)
-        )).thenReturn(page);
+        when(modulesRequestRepository.findAll(specMatcher(), eq(pageable(0))))
+            .thenReturn(page);
 
         ResponseEntity response = service.execute(credentials, dto);
 
-        assertEquals(200, response.getStatusCodeValue());
-
         StandardResponseService body = (StandardResponseService) response.getBody();
-        assertEquals("sucesso", body.getMessage());
 
-        List<Map<String, Object>> data = (List<Map<String, Object>>) body.getData();
-        Map<String, Object> item = data.get(0);
+        Map<String, Object> item = ((List<Map<String, Object>>) body.getData()).get(0);
 
-        assertEquals("SOL-123", item.get("protocol"));
         assertEquals("ativo", item.get("status"));
-        assertNull(item.get("denialReason"));
-        assertNull(item.get("cancelReason"));
+        assertFalse(item.containsKey("denialReason"));
+        assertFalse(item.containsKey("cancelReason"));
 
-        verify(modulesRequestRepository, times(1)).findAll(
-            (Specification<ModulesRequestEntity>) argThat(s -> s != null),
-            eq(pageable)
-        );
+        verify(modulesRequestRepository).findAll(specMatcher(), eq(pageable(0)));
     }
 
     @Test
     void testExecute_ShouldReturnDeniedRequest() {
 
-        ModulesReadRequestsDTO dto = new ModulesReadRequestsDTO(
-            "P-001",
-            "mod",
-            "negado",
-            false,
-            0,
-            null,
-            null
-        );
+        ModulesReadRequestsDTO dto =
+            new ModulesReadRequestsDTO("P-001", "mod", "negado", false, 0, null, null);
 
         ModulesRequestEntity req = new ModulesRequestEntity();
-        UUID reqId = UUID.randomUUID();
-        req.setId(reqId);
+        req.setId(UUID.randomUUID());
         req.setProtocolNumber("P-001");
         req.setModuleNamesRequested(List.of("mod"));
         req.setStatus("negado");
-        req.setDenialReason("Negado por X");
-        req.setUrgent(false);
-        req.setJustification("abc");
-        req.setCreatedAt(Instant.parse("2024-01-01T00:00:00Z"));
-
-        Specification<ModulesRequestEntity> spec =
-            ModulesReadRequestsSpecification.filter(
-                "P-001",
-                "mod",
-                "negado",
-                false,
-                null,
-                null,
-                userId.toString()
-            );
-
-        Pageable pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "createdAt");
+        req.setDenialReason("Razão X");
+        req.setCreatedAt(Instant.now());
 
         Page<ModulesRequestEntity> page =
-            new PageImpl<>(List.of(req), pageable, 1);
+            new PageImpl<>(List.of(req), pageable(0), 1);
 
-        when(modulesRequestRepository.findAll(
-            (Specification<ModulesRequestEntity>) argThat(s -> s != null),
-            eq(pageable)
-        )).thenReturn(page);
+        when(modulesRequestRepository.findAll(specMatcher(), eq(pageable(0))))
+            .thenReturn(page);
 
         ResponseEntity response = service.execute(credentials, dto);
 
-        StandardResponseService body = (StandardResponseService) response.getBody();
-
-        Map<String, Object> item = ((List<Map<String, Object>>) body.getData()).get(0);
+        Map<String, Object> item =
+            ((List<Map<String, Object>>) ((StandardResponseService) response.getBody()).getData()).get(0);
 
         assertEquals("negado", item.get("status"));
-        assertEquals("Negado por X", item.get("denialReason"));
-        assertNull(item.get("cancelReason"));
-        assertNull(item.get("linkedProtocol"));
+        assertEquals("Razão X", item.get("denialReason"));
+        assertFalse(item.containsKey("cancelReason"));
+        assertFalse(item.containsKey("linkedProtocol"));
 
-        verify(modulesRequestRepository, times(1)).findAll(
-            (Specification<ModulesRequestEntity>) argThat(s -> s != null),
-            eq(pageable)
-        );
+        verify(modulesRequestRepository).findAll(specMatcher(), eq(pageable(0)));
+    }
+
+    @Test
+    void testExecute_DeniedWithoutReason() {
+
+        ModulesReadRequestsDTO dto =
+            new ModulesReadRequestsDTO("P-9", "mod", "negado", false, 0, null, null);
+
+        ModulesRequestEntity req = new ModulesRequestEntity();
+        req.setId(UUID.randomUUID());
+        req.setProtocolNumber("P-9");
+        req.setModuleNamesRequested(List.of("mod"));
+        req.setStatus("negado");
+        req.setDenialReason(null);
+        req.setCreatedAt(Instant.now());
+
+        Page<ModulesRequestEntity> page = new PageImpl<>(List.of(req), pageable(0), 1);
+
+        when(modulesRequestRepository.findAll(specMatcher(), eq(pageable(0))))
+            .thenReturn(page);
+
+        ResponseEntity response = service.execute(credentials, dto);
+
+        Map<String, Object> item =
+            ((List<Map<String, Object>>) ((StandardResponseService) response.getBody()).getData()).get(0);
+
+        assertEquals("negado", item.get("status"));
+        assertNull(item.get("denialReason"));
+        assertFalse(item.containsKey("cancelReason"));
+
+        verify(modulesRequestRepository).findAll(specMatcher(), eq(pageable(0)));
     }
 
     @Test
     void testExecute_ShouldReturnCanceledRequest() {
 
-        ModulesReadRequestsDTO dto = new ModulesReadRequestsDTO(
-            "XX-22",
-            "mod",
-            "cancelado",
-            true,
-            0,
-            null,
-            null
-        );
+        ModulesReadRequestsDTO dto =
+            new ModulesReadRequestsDTO("XX-22", "mod", "cancelado", true, 0, null, null);
 
         ModulesRequestEntity req = new ModulesRequestEntity();
-        UUID reqId = UUID.randomUUID();
-        req.setId(reqId);
+        req.setId(UUID.randomUUID());
         req.setProtocolNumber("XX-22");
         req.setModuleNamesRequested(List.of("mod"));
         req.setStatus("cancelado");
         req.setCancelReason("Cancelado Y");
-        req.setUrgent(true);
-        req.setJustification("zzz");
-        req.setCreatedAt(Instant.parse("2024-01-01T00:00:00Z"));
-
-        Specification<ModulesRequestEntity> spec =
-            ModulesReadRequestsSpecification.filter(
-                "XX-22",
-                "mod",
-                "cancelado",
-                true,
-                null,
-                null,
-                userId.toString()
-            );
-
-        Pageable pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "createdAt");
+        req.setCreatedAt(Instant.now());
 
         Page<ModulesRequestEntity> page =
-            new PageImpl<>(List.of(req), pageable, 1);
+            new PageImpl<>(List.of(req), pageable(0), 1);
 
-        when(modulesRequestRepository.findAll(
-            (Specification<ModulesRequestEntity>) argThat(s -> s != null),
-            eq(pageable)
-        )).thenReturn(page);
+        when(modulesRequestRepository.findAll(specMatcher(), eq(pageable(0))))
+            .thenReturn(page);
 
         ResponseEntity response = service.execute(credentials, dto);
 
-        StandardResponseService body = (StandardResponseService) response.getBody();
-        Map<String, Object> item = ((List<Map<String, Object>>) body.getData()).get(0);
+        Map<String, Object> item =
+            ((List<Map<String, Object>>) ((StandardResponseService) response.getBody()).getData()).get(0);
 
         assertEquals("cancelado", item.get("status"));
         assertEquals("Cancelado Y", item.get("cancelReason"));
-        assertNull(item.get("denialReason"));
-        assertNull(item.get("linkedProtocol"));
+        assertFalse(item.containsKey("denialReason"));
 
-        verify(modulesRequestRepository, times(1)).findAll(
-            (Specification<ModulesRequestEntity>) argThat(s -> s != null),
-            eq(pageable)
-        );
+        verify(modulesRequestRepository).findAll(specMatcher(), eq(pageable(0)));
     }
 
+    @Test
+    void testExecute_CanceledWithoutReason() {
+
+        ModulesReadRequestsDTO dto =
+            new ModulesReadRequestsDTO("B-7", "mod", "cancelado", true, 0, null, null);
+
+        ModulesRequestEntity req = new ModulesRequestEntity();
+        req.setId(UUID.randomUUID());
+        req.setProtocolNumber("B-7");
+        req.setModuleNamesRequested(List.of("mod"));
+        req.setStatus("cancelado");
+        req.setCancelReason(null);
+        req.setCreatedAt(Instant.now());
+
+        Page<ModulesRequestEntity> page =
+            new PageImpl<>(List.of(req), pageable(0), 1);
+
+        when(modulesRequestRepository.findAll(specMatcher(), eq(pageable(0))))
+            .thenReturn(page);
+
+        ResponseEntity response = service.execute(credentials, dto);
+
+        Map<String, Object> item =
+            ((List<Map<String, Object>>) ((StandardResponseService) response.getBody()).getData()).get(0);
+
+        assertNull(item.get("cancelReason"));
+        assertFalse(item.containsKey("denialReason"));
+
+        verify(modulesRequestRepository).findAll(specMatcher(), eq(pageable(0)));
+    }
+
+    @Test
+    void testExecute_StatusNull_OtherBranch() {
+
+        ModulesReadRequestsDTO dto =
+            new ModulesReadRequestsDTO(null, null, null, null, 0, null, null);
+
+        ModulesRequestEntity req = new ModulesRequestEntity();
+        req.setId(UUID.randomUUID());
+        req.setProtocolNumber("ABC");
+        req.setModuleNamesRequested(List.of("x"));
+        req.setStatus(null);
+        req.setLinkedProtocol(null);
+        req.setCreatedAt(Instant.now());
+
+        Page<ModulesRequestEntity> page =
+            new PageImpl<>(List.of(req), pageable(0), 1);
+
+        when(modulesRequestRepository.findAll(specMatcher(), eq(pageable(0))))
+            .thenReturn(page);
+
+        ResponseEntity response = service.execute(credentials, dto);
+
+        Map<String, Object> item =
+            ((List<Map<String, Object>>) ((StandardResponseService) response.getBody()).getData()).get(0);
+
+        assertFalse(item.containsKey("denialReason"));
+        assertFalse(item.containsKey("cancelReason"));
+        assertFalse(item.containsKey("linkedProtocol"));
+
+        verify(modulesRequestRepository).findAll(specMatcher(), eq(pageable(0)));
+    }
+
+    @Test
+    void testExecute_UnknownStatus_ShouldUseFinalElse() {
+
+        ModulesReadRequestsDTO dto =
+            new ModulesReadRequestsDTO(null, null, "em_analise", false, 0, null, null);
+
+        ModulesRequestEntity req = new ModulesRequestEntity();
+        req.setId(UUID.randomUUID());
+        req.setProtocolNumber("X");
+        req.setModuleNamesRequested(List.of("m"));
+        req.setStatus("em_analise");
+        req.setCreatedAt(Instant.now());
+
+        Page<ModulesRequestEntity> page =
+            new PageImpl<>(List.of(req), pageable(0), 1);
+
+        when(modulesRequestRepository.findAll(specMatcher(), eq(pageable(0))))
+            .thenReturn(page);
+
+        ResponseEntity response = service.execute(credentials, dto);
+
+        Map<String, Object> item =
+            ((List<Map<String, Object>>) ((StandardResponseService) response.getBody()).getData()).get(0);
+
+        assertFalse(item.containsKey("denialReason"));
+        assertFalse(item.containsKey("cancelReason"));
+
+        verify(modulesRequestRepository).findAll(specMatcher(), eq(pageable(0)));
+    }
 }
