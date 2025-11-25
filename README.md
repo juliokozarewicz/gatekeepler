@@ -107,7 +107,7 @@ Report available at:
 ## **Test Credentials (data.sql)**
 
 | **Email** | **Password** | **Department** | 
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | ti@email.com | Teste123456! | IT |
 | financeiro@email.com | Teste123456! | Finance |
 | rh@email.com | Teste123456! | HR |
