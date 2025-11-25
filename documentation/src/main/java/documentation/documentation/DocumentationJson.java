@@ -293,7 +293,7 @@ public class DocumentationJson {
                                                 },
                                                 "message": {
                                                     "type": "string",
-                                                    "example": "Account created successfully, please activate your account through the link sent to your email."
+                                                    "example": "Account created successfully."
                                                 },
                                                 "links": {
                                                     "type": "object",
@@ -423,7 +423,7 @@ public class DocumentationJson {
                                                 },
                                                 "message": {
                                                     "type": "string",
-                                                    "example": "We couldn't complete your login. More information has been sent to your email."
+                                                    "example": "We couldn't complete your login."
                                                 }
                                             }
                                         }
@@ -558,7 +558,7 @@ public class DocumentationJson {
                                                 },
                                                 "message": {
                                                     "type": "string",
-                                                    "example": "We couldn't complete your login. More information has been sent to your email."
+                                                    "example": "We couldn't complete your login."
                                                 }
                                             }
                                         }
