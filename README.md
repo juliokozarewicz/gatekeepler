@@ -106,12 +106,12 @@ Report available at:
 
 ## **Test Credentials (data.sql)**
 
-| **Email** | **Password** | **Department** |  |
+| **Email** | **Password** | **Department** | 
 | --- | --- | --- | --- |
-| ti@email.com | Teste123456! | IT |  |
-| financeiro@email.com | Teste123456! | Finance |  |
-| rh@email.com | Teste123456! | HR |  |
-| operacoes@email.com | Teste123456! | Operations |  |
+| ti@email.com | Teste123456! | IT |
+| financeiro@email.com | Teste123456! | Finance |
+| rh@email.com | Teste123456! | HR |
+| operacoes@email.com | Teste123456! | Operations |
 
 ---
 
