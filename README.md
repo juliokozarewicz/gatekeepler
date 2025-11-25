@@ -20,7 +20,7 @@ sudo docker compose up --build -d
   [**CLICK HERE TO DOWNLOAD**](0_utils/postman-files/)
 
 - **Test Report (JaCoCo coverage):**  
-  [CLICK HERE TO DOWNLOAD THE TEST REPORT](./0_utils/tests/tests.pdf)
+  [**CLICK HERE TO DOWNLOAD THE TEST REPORT**](./0_utils/tests/tests.pdf)
 
 ---
 
@@ -32,10 +32,7 @@ sudo docker compose up --build -d
 mvn clean verify
 ```
 
-This generates the JaCoCo report and fails the build if coverage is below the minimum (95%).
-
-Report available at:
-
+This generates the JaCoCo report and fails the build if coverage is below the minimum (95%). Report available at:
 **“gatekeepler/modules/target/site/jacoco/index.html”**
 
 ---
