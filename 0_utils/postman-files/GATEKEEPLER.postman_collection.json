@@ -22,9 +22,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/helloworld?message=test_message",
+							"raw": "{{base_url}}/api/v1/helloworld?message=test_message",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"helloworld"
@@ -65,9 +65,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/accounts/signup",
+							"raw": "{{base_url}}/api/v1/accounts/signup",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"accounts",
@@ -126,9 +126,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/accounts/login",
+							"raw": "{{base_url}}/api/v1/accounts/login",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"accounts",
@@ -186,9 +186,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/accounts/refresh-login",
+							"raw": "{{base_url}}/api/v1/accounts/refresh-login",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"accounts",
@@ -233,9 +233,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/accounts/get-profile",
+							"raw": "{{base_url}}/api/v1/accounts/get-profile",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"accounts",
@@ -276,9 +276,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/accounts/update-profile",
+							"raw": "{{base_url}}/api/v1/accounts/update-profile",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"accounts",
@@ -324,9 +324,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/modules/create-request",
+							"raw": "{{base_url}}/api/v1/modules/create-request",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"modules",
@@ -358,9 +358,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/modules/read-requests?page=&protocolNumber=&status=&moduleName=&urgent=&startDate=&endDate=",
+							"raw": "{{base_url}}/api/v1/modules/read-requests?page=&protocolNumber=&status=&moduleName=&urgent=&startDate=&endDate=",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"modules",
@@ -422,9 +422,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/modules/read-one-request/d4bb6532-592c-4c4e-9445-cc5a5745d96d",
+							"raw": "{{base_url}}/api/v1/modules/read-one-request/d4bb6532-592c-4c4e-9445-cc5a5745d96d",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"modules",
@@ -457,9 +457,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/modules/renew-request/eb57a573-eef2-4fb3-848f-a26e75ce9d58",
+							"raw": "{{base_url}}/api/v1/modules/renew-request/eb57a573-eef2-4fb3-848f-a26e75ce9d58",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"modules",
@@ -501,9 +501,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/modules/cancel-request/19176499-91de-43e8-9604-ea274b550964",
+							"raw": "{{base_url}}/api/v1/modules/cancel-request/19176499-91de-43e8-9604-ea274b550964",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"modules",
@@ -536,9 +536,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/modules/read-modules",
+							"raw": "{{base_url}}/api/v1/modules/read-modules",
 							"host": [
-								"{{base_url}}"
+								"{{base_url}}/api/v1"
 							],
 							"path": [
 								"modules",
