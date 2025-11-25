@@ -32,8 +32,7 @@ sudo docker compose up --build -d
 mvn clean verify
 ```
 
-This generates the JaCoCo report and fails the build if coverage is below the minimum (95%). Report available at:
-**“gatekeepler/modules/target/site/jacoco/index.html”**
+This generates the JaCoCo report and fails the build if coverage is below the minimum (95%). Report available at: **“gatekeepler/modules/target/site/jacoco/index.html”**
 
 ---
 
@@ -137,7 +136,7 @@ The project automatically populates (via **Flyway**):
 
 ## **Tests**
 
-- Minimum coverage: **95%+ (mandatory)**
+- Minimum coverage: **95%+**
 - Tests for **all** business rules
 - Tests for exceptions and negative scenarios
 
