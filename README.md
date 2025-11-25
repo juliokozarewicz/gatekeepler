@@ -22,6 +22,9 @@ sudo docker compose up --build -d
 
   [**CLICK HERE TO DOWNLOAD**](0_utils/postman-files/)
 
+- **Test Report (JaCoCo coverage):**  
+  [CLICK HERE TO DOWNLOAD THE TEST REPORT](./0_utils/tests/tests.pdf)
+
 ---
 
 ## **Running the Tests**
