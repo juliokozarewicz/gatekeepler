@@ -25,13 +25,6 @@ http {
     limit_conn conn_limit_zone 10;
     limit_req_status 429;
 
-    # Blocking due to suspicious User-Agent (bots, scanners, etc.)
-    map $http_user_agent $bad_ua {
-        default 0;
-        "~*(curl|wget|python-requests|masscan|nmap|nikto|sqlmap|bot|scraper)" 1;
-        "~*Docker-Healthcheck" 0;
-    }
-
     # Special log for DDOS attacks or limits reached
     log_format ddos '$remote_addr - $http_host "$request" $status [$time_local] '
                     '"$http_user_agent" "$http_referer" '
@@ -86,11 +79,6 @@ http {
         # buffer
         proxy_buffering off;
         proxy_request_buffering off;
-
-        # Block suspicious agents
-        if ($bad_ua) {
-            return 403;
-        }
 
         # ----------------------------------------------------------- (init security)
 
