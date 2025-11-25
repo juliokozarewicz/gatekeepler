@@ -6,7 +6,7 @@ This project implements the complete solution for a Mid-Level Java Developer tec
 
 ## **How to Run with Docker**
 
-- **Inside the “gatekeepler” root, access the “1_deploy” directory and run the command to start the application:**
+- **First, clone the repository to your local machine. Inside the “gatekeepler” root, access the “1_deploy” directory and run the command to start the application:**
 
 ```bash
 sudo docker compose up --build -d
