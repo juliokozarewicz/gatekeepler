@@ -9,6 +9,7 @@ import org.mockito.*;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ActiveProfiles("test")
 class ModulesUtilsServiceTest {
 
     @Mock

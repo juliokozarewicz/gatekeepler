@@ -1,10 +1,13 @@
 package gatekeepler.modules.services;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
+
 import java.util.HashMap;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
+@ActiveProfiles("test")
 class StandardResponseServiceTest {
 
     private final int STATUS_CODE = 200;

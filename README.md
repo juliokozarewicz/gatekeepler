@@ -100,7 +100,7 @@ This generates the JaCoCo report and fails the build if coverage is below the mi
 
 ---
 
-## **Test Credentials (data.sql)**
+## **Test Credentials**
 
 | **Email** | **Password** | **Department** | 
 | --- | --- | --- |

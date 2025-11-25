@@ -13,6 +13,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.*;
@@ -20,6 +21,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ActiveProfiles("test")
 class ModulesReadRequestsServiceTest {
 
     @Mock

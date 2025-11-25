@@ -14,6 +14,7 @@ import org.mockito.*;
 
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Locale;
@@ -21,6 +22,7 @@ import java.util.Locale;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ActiveProfiles("test")
 class ModulesReadModuleServiceTest {
 
     @Mock private MessageSource messageSource;
